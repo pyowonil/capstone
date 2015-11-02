@@ -2,19 +2,53 @@ package com.example.edge.myapplication;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
     // text view
     private TextView m_txtv_simpson;
+    private TextView m_txtv_wifi;
+    private TextView m_txtv_gps;
+
+    // button
+    private Button m_btn_gpsinfo;
+
+    // gps object
+    private GpsInfo m_gps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // set gps object
+        m_gps = new GpsInfo(MainActivity.this);
+
         m_txtv_simpson = (TextView)findViewById(R.id.simpson);
+        m_txtv_wifi = (TextView)findViewById(R.id.wifiscan);
+        m_txtv_gps = (TextView)findViewById(R.id.gpsinfo);
+
+        m_btn_gpsinfo = (Button)findViewById(R.id.btn_gpsinfo);
+
+        m_btn_gpsinfo.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View arg) {
+                // gps 사용 유무 가져오기
+                if(m_gps.isGetLocation()) {
+                    double latitude, longitude;
+                    latitude = m_gps.getLatitude();
+                    longitude = m_gps.getLongitude();
+                    String gpsinfo = "Latitude   : " + Double.toString(latitude) + "\nLongitude : " + Double.toString(longitude);
+                    m_txtv_gps.setText(gpsinfo);
+                } else {
+                    m_gps.showSettingsAlert();
+                    String gpsinfo = "Latitude   : " + "Error" + "\nLongitude : " + "Error";
+                    m_txtv_gps.setText(gpsinfo);
+                }
+            }
+        });
 
         String flowInfo = "";
         int n = 6;

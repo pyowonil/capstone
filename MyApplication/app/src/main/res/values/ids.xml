@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="simpson" type="id" />
+    <item name="wifiscan" type="id" />
+    <item name="gpsinfo" type="id" />
 </resources>
