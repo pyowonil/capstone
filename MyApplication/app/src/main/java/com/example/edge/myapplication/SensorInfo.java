@@ -19,12 +19,13 @@ public class SensorInfo implements Parcelable{
     private float accY[];
     private float accZ[];
     private int t = 0;
+    private final int size = 300;
 
     public SensorInfo(){
         acc = new float[3];
-        accX = new float[100];
-        accY = new float[100];
-        accZ = new float[100];
+        accX = new float[size];
+        accY = new float[size];
+        accZ = new float[size];
     }
 
     public SensorInfo(Parcel in){
@@ -47,11 +48,14 @@ public class SensorInfo implements Parcelable{
     };
 
     public void setAccSensor(float x, float y, float z){
+        acc[0] = x;
+        acc[1] = y;
+        acc[2] = z;
         this.accX[t] = x;
         this.accY[t] = y;
         this.accZ[t] = z;
         t++;
-        if(t >= 100) t = 0;
+        if(t >= size) t = 0;
     }
 
     public float[] getAccX(){
@@ -68,6 +72,14 @@ public class SensorInfo implements Parcelable{
 
     public float getAccSensor(int idx){
         return acc[idx];
+    }
+
+    public int getIndex(){
+        return t;
+    }
+
+    public int getMaxSize(){
+        return size;
     }
 
     @Override
