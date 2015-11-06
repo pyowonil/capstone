@@ -59,7 +59,7 @@ public class SensorService extends Service implements SensorEventListener{
                     acc[2] = event.values[2];
                     sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
                     //Intent sensorIntent = new Intent(SensorService.this,MainActivity.class);
-                    Intent sensorIntent = new Intent("android.intent.action.MAIN");
+                    Intent sensorIntent = new Intent("MAIN");
                     sensorIntent.putExtra("sensorData",sensorInfo);
 //                    sensorIntent.putExtra("sensorData",acc);
                     sendBroadcast(sensorIntent);

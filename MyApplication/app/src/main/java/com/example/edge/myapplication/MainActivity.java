@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         receiver = new SensorReceiver();
         if(flag){
             try{
-                IntentFilter mainFilter = new IntentFilter("android.intent.action.MAIN");
+                IntentFilter mainFilter = new IntentFilter("MAIN");
                 registerReceiver(receiver, mainFilter);
             }catch(Exception e) {
 
@@ -156,11 +156,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d("RECEIVER : ", "HIHIHIHIHIHIHIHIHIHIHIHIHIHHIHIHI");
+            sensorinfo = intent.getParcelableExtra("sensorData");
             Bundle bundle = getIntent().getExtras();
-            bundle.
-            sensorinfo = bundle.getParcelable("sensorData");
-            i++;
-            text.setText("received data(count) : " + i);
+            if(bundle != null){
+                text.setText("received data ok");
+            }else{
+                text.setText("received data null");
+            }
+            //sensorinfo = bundle.getParcelable("sensorData");
+//            i++;
+//            text.setText("received data(count) : " + i);
             //acc = intent.getFloatArrayExtra("sensorData");
             //sensorinfo.setAccSensor(acc[0],acc[1],acc[2]);
             //Toast.makeText(getApplicationContext(),"Walll....",1).show();
