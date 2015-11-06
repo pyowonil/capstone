@@ -146,17 +146,6 @@ public class MainActivity extends AppCompatActivity {
         mCallbackText = (TextView)findViewById(R.id.mCallbackText);
         Log.d(TAG, " 생성");
         doBindService();
-
-//        Button button = (Button)findViewById(R.id.bind);
-//        button.setOnClickListener(mBindListener);
-//        button = (Button)findViewById(R.id.unbind);
-//        button.setOnClickListener(mUnBindListener);
-//
-//        mCallbackText = (TextView)findViewById(R.id.callback);
-//        mCallbackText.setText("Not attached");
-
-
-
         SensorView sv = new SensorView(this);
         linearLayout.addView(sv);
     }
@@ -212,23 +201,21 @@ public class MainActivity extends AppCompatActivity {
             canvas.drawLine(0, 0, 0, y, paint);
             canvas.drawLine(0, y2, x, y2, paint);
             canvas.drawLine(0, y2*3, x, y2*3, paint);
-            canvas.drawLine(0, y2*5, x, y2*5, paint);
+            canvas.drawLine(0, y2 * 5, x, y2 * 5, paint);
             paint.setStrokeWidth(5);
 
-            for(int i=0; i<maxSize; i++){
-                int m = (t-i);
-                if(m<0) m += maxSize;
-                int nm = m+1;
-                if(nm>=maxSize) nm -= maxSize;
+            for(int i=0; i<maxSize; i++) {
+                int m = (t - i);
+                if (m < 0) m += maxSize;
+                int nm = m + 1;
+                if (nm >= maxSize) nm -= maxSize;
                 paint.setColor(Color.RED);
                 canvas.drawLine((i + 1) * intvls, y2 + accX[m] * q, i * intvls, y2 + accX[nm] * q, paint);
                 paint.setColor(Color.BLUE);
-                canvas.drawLine((i+1)*intvls, y2*3 + accY[m]*q, i*intvls, y2*3+accY[nm]*q, paint);
+                canvas.drawLine((i + 1) * intvls, y2 * 3 + accY[m] * q, i * intvls, y2 * 3 + accY[nm] * q, paint);
                 paint.setColor(Color.GREEN);
-                canvas.drawLine((i+1)*intvls, y2*5 + accZ[m]*q, i*intvls, y2*5+accZ[nm]*q, paint);
+                canvas.drawLine((i + 1) * intvls, y2 * 5 + accZ[m] * q, i * intvls, y2 * 5 + accZ[nm] * q, paint);
             }
-//            t++;
-//            if(t>=x) t = 0;
         }
 
         @Override
@@ -254,10 +241,7 @@ public class MainActivity extends AppCompatActivity {
                     accZ = sensorInfo.getAccZ();
                     t = sensorInfo.getIndex();
                     drawAcc(canvas, accX, accY, accZ);
-                } else {
-
-                }
-
+                } else {       }
                 invalidate();
             }
         }
