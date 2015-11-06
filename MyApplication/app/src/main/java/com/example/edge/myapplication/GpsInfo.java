@@ -110,7 +110,7 @@ public class GpsInfo extends Service implements LocationListener {
      * */
     public void stopUsingGPS(){
         if(locationManager != null){
-            locationManager.removeUpdates(GpsInfo.this);
+            //locationManager.removeUpdates(GpsInfo.this);
         }
     }
 
