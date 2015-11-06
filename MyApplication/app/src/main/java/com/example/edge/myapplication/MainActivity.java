@@ -19,9 +19,6 @@ public class MainActivity extends AppCompatActivity {
     // gps object
     private GpsInfo m_gps;
 
-    // (#calculate) simpson object
-    private Simpson m_simpson;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,9 +26,6 @@ public class MainActivity extends AppCompatActivity {
 
         // set gps object
         m_gps = new GpsInfo(MainActivity.this);
-
-        // set simpson
-        m_simpson = new Simpson();
 
         m_txtv_simpson = (TextView)findViewById(R.id.simpson);
         m_txtv_wifi = (TextView)findViewById(R.id.wifiscan);
@@ -67,12 +61,32 @@ public class MainActivity extends AppCompatActivity {
         }
         float a = x[0], b = x[n];
         float dx = (b-a)/(float)n;
-        float simpsonResult1 = m_simpson.simpson(y, a, b);
-        float simpsonResult2 = m_simpson.simpson(y, dx);
+        float simpsonResult1 = simpson(y, a, b);
+        float simpsonResult2 = simpson(y, dx);
 
         flowInfo += "\na : " + Float.toString(a) + "\nb : " + Float.toString(b) + "\ndx : " + Float.toString(dx) + "\n";
-        flowInfo += "Simpson Result : " + Float.toString(simpsonResult1) + ", another method: " + Float.toString(simpsonResult2);
+        flowInfo += "Simpson Result : " + Float.toString(simpsonResult1) + ", " + Float.toString(simpsonResult2);
 
         m_txtv_simpson.setText(flowInfo);
+    }
+
+    public float simpson(float[]y, float a, float b) {
+        return simpson(y, (b-a)/(y.length-1));
+    }
+    public float simpson(float[] y, float dx) {
+        assert(y.length > 2 && y.length % 2 == 1);
+        int n = y.length;
+        float result = y[0] + y[n-1];
+        float oddOrders = 0, evenOrders = -y[0];
+        for(int i=1; i<n-1; i+=2) {
+            oddOrders += y[i];
+            evenOrders += y[i-1];
+        }
+        oddOrders *= 4;
+        evenOrders *= 2;
+        result += oddOrders + evenOrders;
+        result = (float) ((result * dx)/3.0);
+
+        return result;
     }
 }
