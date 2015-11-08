@@ -15,13 +15,6 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
-    <TextView android:id="@id/gpsinfo" android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="79dp" />
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,10 +30,20 @@
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_above="@id/gpsinfo"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:id="@+id/linear"></LinearLayout>
+        android:id="@+id/linear"
+        android:layout_above="@+id/mCallbackText"></LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Small Text"
+        android:id="@+id/mCallbackText"
+        android:layout_above="@+id/gpsinfo"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -49,15 +52,23 @@
         android:text="Small Text"
         android:id="@+id/acctext"
         android:layout_alignTop="@+id/btn_gpsinfo"
-        android:layout_centerHorizontal="true" />
+        android:layout_toRightOf="@+id/btn_gpsinfo"
+        android:layout_marginLeft="13dp"
+        android:layout_marginStart="13dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
-        android:id="@+id/mCallbackText"
-        android:layout_below="@+id/linear"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:id="@+id/gpsinfo"
+        android:layout_above="@+id/acctext"
+        android:layout_alignLeft="@+id/acctext"
+        android:layout_alignStart="@+id/acctext"
+        android:layout_alignRight="@+id/acctext"
+        android:layout_alignEnd="@+id/acctext" />
+
 </RelativeLayout>

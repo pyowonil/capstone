@@ -32,11 +32,15 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout linear;
     SensorInfo sensorInfo;
 
-    // button
-    private Button m_btn_gpsinfo;
-
+    // GPS ---------------------------------
     // gps object
     private GpsInfo m_gps;
+    // button
+    private Button m_btn_gpsinfo;
+    // textview
+    private TextView m_txtv_gpsinfo;
+    // --------------------------------- GPS
+
 
     class ActivityHandler extends Handler {
         @Override
@@ -148,6 +152,35 @@ public class MainActivity extends AppCompatActivity {
         doBindService();
         SensorView sv = new SensorView(this);
         linearLayout.addView(sv);
+
+        // GPS ---------------------------------
+        // set gps object
+        m_gps = new GpsInfo(MainActivity.this);
+        m_btn_gpsinfo = (Button)findViewById(R.id.btn_gpsinfo);
+        m_txtv_gpsinfo = (TextView)findViewById(R.id.gpsinfo);
+
+        String gpsinfo = "Latitude : \nLongitude : ";
+        m_txtv_gpsinfo.setText(gpsinfo);
+
+        m_btn_gpsinfo.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // gps 사용 유무 가져오기
+                if(m_gps.isGetLocation()) {
+                    double latitude, longitude;
+                    latitude = m_gps.getLatitude();
+                    longitude = m_gps.getLongitude();
+                    String gpsinfo = "Latitude : " + Double.toString(latitude) + "\nLongitude : " + Double.toString(longitude);
+                    m_txtv_gpsinfo.setText(gpsinfo);
+                } else {
+                    m_gps.showSettingsAlert();
+                    String gpsinfo = "Latitude : " + "Error" + "\nLongitude : " + "Error";
+                    m_txtv_gpsinfo.setText(gpsinfo);
+                }
+            }
+        });
+        // --------------------------------- GPS
     }
 
     public float simpson(float[]y, float a, float b) {
