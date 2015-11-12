@@ -22,12 +22,24 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import static java.lang.Math.*;
+import Jama.Matrix;
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
 
     Messenger mServiceMessenger = null;
     boolean mIsBound;
     TextView mCallbackText, acctext;
     final String TAG = "[클라이언트]";
+
+    private double dt = 1.0/100.0;
+    private double processNoiseStdev = 3;
+    private double measurementNoiseStdev = 5;
+    double m = 0;
+    Random jerk = new Random();
+    Random sensorNoise = new Random();
+    private KalmanFilter KF;
 
     LinearLayout linear;
     SensorInfo sensorInfo;
@@ -48,13 +60,15 @@ public class MainActivity extends AppCompatActivity {
             switch(msg.what){
                 case SensorService.MSG_SET_VALUE:
                     Log.d(TAG, " 서비스로부터 값을 전달 받음");
-                    mCallbackText.setText("Received from service : " + msg.arg1);
+
 //                    Bundle bundle = msg.getData();
 //                    sensorInfo = bundle.getParcelable("sensor");
                     sensorInfo = (SensorInfo)msg.obj;
                     if(sensorInfo != null){
                         Log.d(TAG, " 가속도 값이 있음");
                         acctext.setText("x : " + sensorInfo.getAccSensor(0) + "\ny : " + sensorInfo.getAccSensor(1) + "\nz : " + sensorInfo.getAccSensor(2));
+//                        mCallbackText.setText("gx : " + sensorInfo.getAccG(0) + "\ngy : " + sensorInfo.getAccG(1) + "\ngz : " + sensorInfo.getAccG(2));
+                        mCallbackText.setText("bx : " + sensorInfo.getBias(0) + "\nby : " + sensorInfo.getBias(1) + "\nbz : " + sensorInfo.getBias(2));
                     }else{
                         Log.d(TAG, " 가속도 값이 없음");
                         acctext.setText("not value");
@@ -153,6 +167,12 @@ public class MainActivity extends AppCompatActivity {
         SensorView sv = new SensorView(this);
         linearLayout.addView(sv);
 
+        // Kalman Filter
+        //KF = KalmanFilter.buildKF(dt, pow(processNoiseStdev,2)/2, pow(measurementNoiseStdev,2));
+
+        // Kalman Filter
+
+
         // GPS ---------------------------------
         // set gps object
         m_gps = new GpsInfo(MainActivity.this);
@@ -181,6 +201,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // --------------------------------- GPS
+
+
     }
 
     public float simpson(float[]y, float a, float b) {
@@ -272,6 +294,11 @@ public class MainActivity extends AppCompatActivity {
                     accX = sensorInfo.getAccX();
                     accY = sensorInfo.getAccY();
                     accZ = sensorInfo.getAccZ();
+//                    double ax = (double)sensorInfo.getAccSensor(0);
+//                    double vx = ax*dt;
+//                    double tx = dt * vx + 0.5 * pow(dt, 2) * ax;
+//
+//                    KF.setX(new Matrix(new double[][]{{tx},{vx},{ax}}));
                     t = sensorInfo.getIndex();
                     drawAcc(canvas, accX, accY, accZ);
                 } else {       }

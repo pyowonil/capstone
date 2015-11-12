@@ -15,6 +15,13 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.Random;
+
+import Jama.Matrix;
+
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 public class SensorService extends Service implements SensorEventListener{
 
     static final int MSG_REGISTER_CLIENT = 1;
@@ -26,9 +33,17 @@ public class SensorService extends Service implements SensorEventListener{
     int i = 110;
     static String mText = null;
     SensorManager sensorManager;
-    Sensor accSensor;
-    float acc[];
+    Sensor accSensor, gyroSensor;
+    float[] acc;
     SensorInfo sensorInfo;
+    private double dt = 2.0/1000.0;
+    private double processNoiseStdev = 1;
+    private double measurementNoiseStdev = 0.5;
+    double m = 0;
+    Random jerk = new Random();
+    Random sensorNoise = new Random();
+    private KalmanFilter KF;
+    Filter filter=new Filter();
 
     // create handler class
     class ServiceHandler extends Handler{
@@ -80,10 +95,14 @@ public class SensorService extends Service implements SensorEventListener{
         sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         // Get Accelerometer
         accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         acc = new float[3];
+        acc[0] = 9999;
         sensorInfo = new SensorInfo();
         Log.d(TAG, " 생성");
         Log.d(TAG," 센서 등록");
+
+        KF = KalmanFilter.buildKF(dt, pow(processNoiseStdev, 2) / 2, pow(measurementNoiseStdev, 2));
     }
 
     @Override
@@ -93,15 +112,51 @@ public class SensorService extends Service implements SensorEventListener{
         Log.d(TAG, " 센서 해제");
     }
 
+    double ax = 0;
+    double vx = 0;
+    double tx = 0;
+    float alpha = 0.8f;
+    float gx = 0;
+    float gy = 0;
+    float gz = 0;
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         synchronized (this){
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
+//                    acc[0] = event.values[0];
+//                    acc[1] = event.values[1];
+//                    acc[2] = event.values[2];
+//                    if(acc[0] != 9999) {
+//                        ax = (double) acc[0] * processNoiseStdev;
+//                        vx = ax * dt;
+//                        tx = dt * vx + 0.5 * pow(dt, 2) * ax;
+//                        KF.setX(new Matrix(new double[][]{{tx}, {vx}, {ax}}));
+//                        m = tx + sensorNoise.nextGaussian() * measurementNoiseStdev;
+//                        KF.predict();
+//                        KF.correct(new Matrix(new double[][]{{m}}));
+//                        sensorInfo.setAccSensor(acc[0], (float) KF.getX().get(2, 0), acc[2]);
+//                    }
+//
+//                    gx = alpha*gx + (1-alpha)*acc[0];
+//                    gy = alpha*gy + (1-alpha)*acc[1];
+//                    gz = alpha*gz + (1-alpha)*acc[2];
+//                    acc[0] = acc[0] - gx;
+//                    acc[1] = acc[1] - gy;
+//                    acc[2] = acc[2] - gz;
+//                    acc = filter.HSR(acc);
+//                    sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
+//                    sensorInfo.setAccG(gx,gy,gz);
+
+                    break;
+                case Sensor.TYPE_GYROSCOPE:
                     acc[0] = event.values[0];
                     acc[1] = event.values[1];
                     acc[2] = event.values[2];
+
                     sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
+                    sensorInfo.setAccG(acc[0], acc[1], acc[2]);
                     break;
             }
         }
@@ -118,6 +173,7 @@ public class SensorService extends Service implements SensorEventListener{
         Log.d(TAG, " 연결 요청 받음");
         Toast.makeText(this,"BINDING..",Toast.LENGTH_SHORT).show();
         sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_NORMAL); // 가속도
+        sensorManager.registerListener(this, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL);
         return mServiceMessenger.getBinder();
     }
 }
