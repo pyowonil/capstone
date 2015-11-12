@@ -13,7 +13,7 @@ import android.widget.LinearLayout;
  * Created by park on 2015-11-03.
  */
 public class SensorInfo implements Parcelable{
-
+ 
     private float acc[];
     private float accX[];
     private float accY[];
