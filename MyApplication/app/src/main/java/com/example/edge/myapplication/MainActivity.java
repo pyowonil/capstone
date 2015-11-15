@@ -60,21 +60,18 @@ public class MainActivity extends AppCompatActivity {
             switch(msg.what){
                 case SensorService.MSG_SET_VALUE:
                     Log.d(TAG, " 서비스로부터 값을 전달 받음");
-
-//                    Bundle bundle = msg.getData();
-//                    sensorInfo = bundle.getParcelable("sensor");
                     sensorInfo = (SensorInfo)msg.obj;
                     if(sensorInfo != null){
                         Log.d(TAG, " 가속도 값이 있음");
-                        acctext.setText("x : " + sensorInfo.getAccSensor(0) + "\ny : " + sensorInfo.getAccSensor(1) + "\nz : " + sensorInfo.getAccSensor(2));
-//                        mCallbackText.setText("gx : " + sensorInfo.getAccG(0) + "\ngy : " + sensorInfo.getAccG(1) + "\ngz : " + sensorInfo.getAccG(2));
-                        mCallbackText.setText("bx : " + sensorInfo.getBias(0) + "\nby : " + sensorInfo.getBias(1) + "\nbz : " + sensorInfo.getBias(2));
+//                        acctext.setText("x : " + sensorInfo.getAccSensor(0) + "\ny : " + sensorInfo.getAccSensor(1) + "\nz : " + sensorInfo.getAccSensor(2));
+                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getAccSensor(0) + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1)
+                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2) + "\n시간(sec) : " + sensorInfo.getTime());
                     }else{
                         Log.d(TAG, " 가속도 값이 없음");
                         acctext.setText("not value");
                     }
                     try {
-                        mServiceMessenger.send(Message.obtain(null, SensorService.MSG_SET_VALUE,msg.arg1+1,0));
+                        mServiceMessenger.send(Message.obtain(null, SensorService.MSG_SET_VALUE));
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -166,12 +163,6 @@ public class MainActivity extends AppCompatActivity {
         doBindService();
         SensorView sv = new SensorView(this);
         linearLayout.addView(sv);
-
-        // Kalman Filter
-        //KF = KalmanFilter.buildKF(dt, pow(processNoiseStdev,2)/2, pow(measurementNoiseStdev,2));
-
-        // Kalman Filter
-
 
         // GPS ---------------------------------
         // set gps object
@@ -265,11 +256,11 @@ public class MainActivity extends AppCompatActivity {
                 int nm = m + 1;
                 if (nm >= maxSize) nm -= maxSize;
                 paint.setColor(Color.RED);
-                canvas.drawLine((i + 1) * intvls, y2 + accX[m] * q, i * intvls, y2 + accX[nm] * q, paint);
+                canvas.drawLine((i + 1) * intvls, y2 -(accX[m] * q), i * intvls, y2 -(accX[nm] * q), paint);
                 paint.setColor(Color.BLUE);
-                canvas.drawLine((i + 1) * intvls, y2 * 3 + accY[m] * q, i * intvls, y2 * 3 + accY[nm] * q, paint);
+                canvas.drawLine((i + 1) * intvls, y2 * 3 -(accY[m] * q), i * intvls, y2 * 3 -(accY[nm] * q), paint);
                 paint.setColor(Color.GREEN);
-                canvas.drawLine((i + 1) * intvls, y2 * 5 + accZ[m] * q, i * intvls, y2 * 5 + accZ[nm] * q, paint);
+                canvas.drawLine((i + 1) * intvls, y2 * 5 -(accZ[m] * q), i * intvls, y2 * 5 -(accZ[nm] * q), paint);
             }
         }
 
@@ -294,11 +285,6 @@ public class MainActivity extends AppCompatActivity {
                     accX = sensorInfo.getAccX();
                     accY = sensorInfo.getAccY();
                     accZ = sensorInfo.getAccZ();
-//                    double ax = (double)sensorInfo.getAccSensor(0);
-//                    double vx = ax*dt;
-//                    double tx = dt * vx + 0.5 * pow(dt, 2) * ax;
-//
-//                    KF.setX(new Matrix(new double[][]{{tx},{vx},{ax}}));
                     t = sensorInfo.getIndex();
                     drawAcc(canvas, accX, accY, accZ);
                 } else {       }

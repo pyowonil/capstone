@@ -49,22 +49,19 @@ public class Filter {
     // 중력 성분이 제대로 제거 되지 않아 누적 오차가 발생하는데
     // 이를 최소화하기 위해 scale factor를 조절
     public float[] HSR(float[] acc){
-
+        // 정지 상태에서의 3축 가속도 평균 오차 제거 (1000개 데이터 샘플)
+        acc[0] -= -1.8461699e-4;
+        acc[1] -= -5.564482e-5;
+        acc[2] -= 0.009868071;
         // ||a|| = sqrt(x^2 + y^2 + z^2)
         double ta =sqrt( pow(acc[0],2) + pow(acc[1],2) + pow(acc[2],2));
 
         // ||a|| 값에 따라 scale factor 조절
         // ic값은 1보다 미소하게 큰 값 사용
-        // 위랑 아래 중 뭐가 맞을까?
-//        if(ta > 1){
-//            scale = scale*HSR_ic;
-//        }else{
-//            scale = scale/HSR_ic;
-//        }
         if(ta > 1){
-            scale = scale/HSR_ic;
-        }else{
             scale = scale*HSR_ic;
+        }else{
+            scale = scale/HSR_ic;
         }
         acc[0] = (acc[0] * scale);
         acc[1] = (acc[1] * scale);
@@ -78,9 +75,10 @@ public class Filter {
     // Binary I-Controller Function는 작은 오차에는 민감하게
     // 큰 오차에서는 둔감하게 반응해야 한다.
     public float[] HDR(float[] gyro){
-        gyro[0] += HDR_I[0];
-        gyro[1] += HDR_I[1];
-        gyro[2] += HDR_I[2];
+        // 정지 상태의 자이로 센서 평균 오차 제거 (10000 샘플)
+        gyro[0] += (HDR_I[0] - 0.010702647);
+        gyro[1] += (HDR_I[1] + 0.014681378);
+        gyro[2] += (HDR_I[2] + 0.007977725);
 
         // Binary I-Controller 부분
         if( (-threshold < gyro[0] && gyro[0] < threshold) &&

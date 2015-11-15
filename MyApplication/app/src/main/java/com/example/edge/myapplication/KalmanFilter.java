@@ -12,6 +12,57 @@ public class KalmanFilter {
     protected Matrix F, B, U, Q;
     protected Matrix H, R;
     protected Matrix P, P0;
+    private double processNoisePSD;
+    private double measurementNoiseVariance;
+
+    public KalmanFilter(){
+
+    }
+
+    public KalmanFilter(double processNoisePSD, double measurementNoiseVariance){
+        this.processNoisePSD = processNoisePSD;
+        this.measurementNoiseVariance = measurementNoiseVariance;
+    }
+
+    public void update(double dt){
+        setF(new Matrix(new double[][]{
+                {1, dt, pow(dt,2)/2},
+                {0, 1, dt},
+                {0, 0, 1}}));
+        setQ(new Matrix(new double[][]{
+                {pow(dt, 5) / 4, pow(dt, 4) / 2, pow(dt, 3) / 2},
+                {pow(dt, 4) / 2, pow(dt, 3) / 1, pow(dt, 2) / 1},
+                {pow(dt, 3) / 1, pow(dt, 2) / 1, pow(dt, 1) / 1}}).times(processNoisePSD));
+    }
+
+    public void buildKF2(double dt)
+    {
+        //state vector
+        setX(new Matrix(new double[][]{{0, 0, 0}}).transpose());
+        //error covariance matrix
+        setP(Matrix.identity(3, 3));
+        //transition matrix
+        setF(new Matrix(new double[][]{
+                {1, dt, pow(dt, 2) / 2},
+                {0, 1, dt},
+                {0, 0, 1}}));
+        //input gain matrix
+        setB(new Matrix(new double[][]{{0, 0, 0}}).transpose());
+        //input vector
+        setU(new Matrix(new double[][]{{0}}));
+        //process noise covariance matrix
+        setQ(new Matrix(new double[][]{
+                {pow(dt, 5) / 4, pow(dt, 4) / 2, pow(dt, 3) / 2},
+                {pow(dt, 4) / 2, pow(dt, 3) / 1, pow(dt, 2) / 1},
+                {pow(dt, 3) / 1, pow(dt, 2) / 1, pow(dt, 1) / 1}}).times(processNoisePSD));
+
+        //measurement matrix
+        setH(new Matrix(new double[][]{
+                {1, 0, 0}}));
+
+        //measurement noise covariance matrix
+        setR(Matrix.identity(1, 1).times(measurementNoiseVariance));
+    }
 
     public static KalmanFilter buildKF(double dt, double processNoisePSD, double measurementNoiseVariance)
     {
