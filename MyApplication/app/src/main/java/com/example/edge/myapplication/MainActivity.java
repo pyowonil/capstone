@@ -64,8 +64,9 @@ public class MainActivity extends AppCompatActivity {
                     if(sensorInfo != null){
                         Log.d(TAG, " 가속도 값이 있음");
 //                        acctext.setText("x : " + sensorInfo.getAccSensor(0) + "\ny : " + sensorInfo.getAccSensor(1) + "\nz : " + sensorInfo.getAccSensor(2));
-                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getAccSensor(0) + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1)
-                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2) + "\n시간(sec) : " + sensorInfo.getTime());
+//                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getAccSensor(0) + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1)
+//                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2) + "\n시간(sec) : " + sensorInfo.getTime());
+                        mCallbackText.setText("ThresSVM : " + sensorInfo.getThres() + "\nSVM : " + sensorInfo.getSVM() + "\nSTEP : " + sensorInfo.getStep());
                     }else{
                         Log.d(TAG, " 가속도 값이 없음");
                         acctext.setText("not value");

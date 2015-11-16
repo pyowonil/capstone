@@ -141,29 +141,30 @@ public class SensorService extends Service implements SensorEventListener{
                     acc[2] = acc[2] - gz;
                     // HSR 적용
                     acc = filter.HSR(acc);
-                    etime = System.currentTimeMillis();
-                    sensorInfo.setTime(etime-stime);
-                    stime = etime;
-                    double dt = sensorInfo.getTime();
+//                    etime = System.currentTimeMillis();
+//                    sensorInfo.setTime(etime-stime);
+//                    stime = etime;
+//                    double dt = sensorInfo.getTime();
 
                     // ------------------ Kalman Filter 적용 부 ------------------
                     // 보정 안한
 //                    ax = (double) event.values[0] * processNoiseStdev;
-                    ax = (double) acc[0] * processNoiseStdev;
-                    vx = ax * dt;
-                    tx = dt * vx + 0.5 * pow(dt, 2) * ax;
-                    KF.setX(new Matrix(new double[][]{{tx}, {vx}, {ax}}));
-                    m = tx + sensorNoise.nextGaussian() * measurementNoiseStdev;
-                    // dt값 변동을 위한 update함수
-                    KF.update(dt);
-                    KF.predict();
-                    KF.correct(new Matrix(new double[][]{{m}}));
+//                    ax = (double) acc[0] * processNoiseStdev;
+//                    vx = ax * dt;
+//                    tx = dt * vx + 0.5 * pow(dt, 2) * ax;
+//                    KF.setX(new Matrix(new double[][]{{tx}, {vx}, {ax}}));
+//                    m = tx + sensorNoise.nextGaussian() * measurementNoiseStdev;
+//                    // dt값 변동을 위한 update함수
+//                    KF.update(dt);
+//                    KF.predict();
+//                    KF.correct(new Matrix(new double[][]{{m}}));
+                    //                    sensorInfo.setAccSensor((float) KF.getX().get(0, 0), (float) KF.getX().get(1, 0), (float) KF.getX().get(2, 0) );
                     // ----------------- Kalman Filter 적용 부 -------------------
 
-                    sensorInfo.setAccSensor((float) KF.getX().get(0, 0), (float) KF.getX().get(1, 0), (float) KF.getX().get(2, 0) );
 
 
-//                    sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
+
+                    sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
 //                    sensorInfo.setAccG(gx, gy, gz);
                     break;
                 case Sensor.TYPE_GYROSCOPE:

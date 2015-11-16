@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -29,6 +30,14 @@ public class SensorInfo implements Parcelable{
     private float bias[];
     private float cnt = 0;
     private float svm = 0;
+    float thres = 0;
+    int step = 0;
+    int stepCnt = 0;
+    boolean isThres = false;
+    float maxSVM = 0;
+    float thresValue = 1.5f;
+    float peakData[] = new float[6];
+    int peakIndex = 0;
 
     public SensorInfo(){
         acc = new float[3];
@@ -38,6 +47,7 @@ public class SensorInfo implements Parcelable{
         gyro = new float[3];
         accG = new float[3];
         bias = new float[3];
+        peakData[peakIndex] = 1.5f;
     }
 
     public SensorInfo(Parcel in){
@@ -86,7 +96,7 @@ public class SensorInfo implements Parcelable{
         svm = (float)sqrt(pow(x,2) + pow(y,2) + pow(z,2));
 
         // acc[0]는 이동거리
-        acc[0] += x;
+        acc[0] = x;
         if(Math.abs(acc[0]) > 10e17) acc[0] /= 10e18;
         acc[1] = y;
         acc[2] = z;
@@ -96,7 +106,59 @@ public class SensorInfo implements Parcelable{
         t++;
         if(t >= size) t = 0;
 
+        updatePeakData();
 //        movingSVM(svm);
+    }
+
+    public void updatePeakData(){
+        float tmp = 0;
+        float tmp2 = 0;
+        for(int i=0; i<5; i++){
+            int idx = peakIndex+i;
+            if(idx == 6) idx -= 6;
+            tmp += peakData[idx];
+            idx++;
+            if(idx == 6) idx -= 6;
+            tmp2 += peakData[idx];
+        }
+
+        float peak = (0.5f*tmp-0.5f*tmp2)*0.1f;
+        float a = 0;
+        if(peak < 1.5){
+            a = 2.9f;
+        }else if(1.5 <= peak && peak < 1.8){
+            a = 3.1f;
+        }else if(1.8 <= peak && peak < 2.0){
+            a = 2.5f;
+        }else if(2.0 < peak){
+            a = 2.2f;
+        }
+        thresValue = peak +(peakData[peakIndex]*(a/5));
+        peakIndex++;
+        if(peakIndex == 6) peakIndex -= 6;
+    }
+
+    private void movingSVM(float svm){
+        if(svm > thresValue && !isThres){
+            Log.d("[센서] ", "경계를 넘었습니다." + svm);
+            maxSVM = 0;
+            isThres = true;
+        }else{
+            if(isThres){
+                if(svm > thresValue) {
+                    if(maxSVM < svm){
+                        Log.d("[센서] ", "최대치 갱신." + svm);
+                        maxSVM = svm;
+                    }
+                }else if(svm <= thresValue){
+                    Log.d("[센서] ", "경계를 내려갔습니다." + maxSVM);
+                    thres = maxSVM;
+                    isThres = false;
+                    peakData[peakIndex] = maxSVM;
+                    step++;
+                }
+            }
+        }
     }
 
     public void setGyro(float[] gyro){
@@ -109,21 +171,6 @@ public class SensorInfo implements Parcelable{
         return gyro[idx];
     }
 
-    float stdMin = 99;
-    float stdMax = -99;
-    float minSVM = 99;
-    float maxSVM = -99;
-    float prevMinSVM = 99;
-    float prevMaxSVM = -99;
-
-    float minThres = 99;
-    float maxThres = -99;
-    float thres = 0;
-    float meanThres = 0;
-    float thCnt = 0;
-    int step = 0;
-    int stepCnt = 0;
-
     public int getStepCnt(){
         if(stepCnt == 1)
             return t;
@@ -135,76 +182,12 @@ public class SensorInfo implements Parcelable{
         return step;
     }
 
-    private void movingSVM(float svm){
-        if(stdMin == 99){
-            stdMin = svm;
-            stdMax = svm;
-        }else{
-            if(stdMin < svm){
-                if(minSVM == 99){
-                    minSVM = stdMin;
-                }else{
-                    prevMinSVM = minSVM;
-                    minSVM = stdMin;
-                }
-                stdMin = svm;
-            }else{
-                stdMin = svm;
-            }
-
-            if(stdMax < svm){
-                stdMax = svm;
-            }else{
-                if(maxSVM == -99){
-                    maxSVM = stdMax;
-                }else{
-                    prevMaxSVM = maxSVM;
-                    maxSVM = stdMax;
-                }
-                stdMax = svm;
-            }
-        }
-
-        if(maxSVM != -99 && minSVM != 99){
-            thres = (maxSVM+minSVM)/2;
-
-            if(4 < svm && svm < 7 && stepCnt == 0){
-                stepCnt = 1;
-                step++;
-            }else if(4  > svm && stepCnt == 1){
-                stepCnt = 0;
-            }
-
-            meanThres += thres;
-            thCnt++;
-
-            if(minThres == 99){
-                minThres = thres;
-            }else{
-                if(minThres > thres) minThres = thres;
-            }
-            if(maxThres == -99){
-                maxThres = thres;
-            }else{
-                if(maxThres < thres) maxThres = thres;
-            }
-        }
-    }
-
-    public float getMaxThres(){
-        return maxThres;
-    }
-
-    public float getMinThres(){
-        return minThres;
+    public float getMaxSVM(){
+        return maxSVM;
     }
 
     public float getThres(){
         return thres;
-    }
-
-    public float getMeanThres(){
-        return meanThres/thCnt;
     }
 
     public void setAccG(float x, float y, float z){
