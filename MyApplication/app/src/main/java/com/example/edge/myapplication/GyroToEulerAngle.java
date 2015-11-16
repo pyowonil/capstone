@@ -48,5 +48,14 @@ public class GyroToEulerAngle {
         m_anglex += m_angle_deltax * m_deltat;
         m_angley += m_angle_deltay * m_deltat;
         m_anglez += m_angle_deltaz * m_deltat;
+
+        // avoid singluarity problem
+        if(89.5f < m_angley && m_angley < 90.5f) {
+            if(m_angley < 90.0f) {
+                m_angley -= 0.5f;
+            } else {
+                m_angley += 0.5f;
+            }
+        }
     }
 }
