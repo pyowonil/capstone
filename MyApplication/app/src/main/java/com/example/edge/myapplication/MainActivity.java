@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
     private double processNoiseStdev = 3;
     private double measurementNoiseStdev = 5;
     double m = 0;
-    Random jerk = new Random();
     Random sensorNoise = new Random();
     private KalmanFilter KF;
 
@@ -63,12 +62,16 @@ public class MainActivity extends AppCompatActivity {
                     sensorInfo = (SensorInfo)msg.obj;
                     if(sensorInfo != null){
 //                        Log.d(TAG, " 가속도 값이 있음");
-                        acctext.setText("x : " + sensorInfo.getAccSensor(0) + "\ny : " + sensorInfo.getAccSensor(1) + "\nz : " + sensorInfo.getAccSensor(2));
+                        int i = sensorInfo.getT();
+                        if(i == 0) i = 299;
+                        acctext.setText("x : " + sensorInfo.getAccSensor(0,i) + "\ny : " + sensorInfo.getAccSensor(1,i) + "\nz : " + sensorInfo.getAccSensor(2,i));
 //                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getAccSensor(0) + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1)
 //                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2) + "\n시간(sec) : " + sensorInfo.getTime());
 //                        mCallbackText.setText("Pn1 : " + sensorInfo.Pn1 + "\nPn2 : " + sensorInfo.Pn2
 //                                + "\nMn1 : " + sensorInfo.Mn1 + "\nMn2 : " + sensorInfo.Mn2 + "\nSTEP : " + sensorInfo.getStep());
-                        mCallbackText.setText("PHI : " + sensorInfo.ek.phi + "\nTHETA : " + sensorInfo.ek.theta + "\nPSI : " + sensorInfo.ek.psi);
+                        i = sensorInfo.getT2();
+                        if(i == 0) i = 299;
+                        mCallbackText.setText("PHI : " + sensorInfo.getData(0,i) + "\nTHETA : " + sensorInfo.getData(1,i) + "\nPSI : " + sensorInfo.getData(2,i));
                     }else{
 //                        Log.d(TAG, " 가속도 값이 없음");
                         acctext.setText("not value");
@@ -195,8 +198,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         // --------------------------------- GPS
-
-
     }
 
     public float simpson(float[]y, float a, float b) {
@@ -231,11 +232,11 @@ public class MainActivity extends AppCompatActivity {
         float x = 0;
         float y = 0;
         private int t = 0;
+        private int t2 = 0;
         float y2 = 0;
-        float q = 1;
+        float q = 20;
         private Paint paint;
-        private float accX[], accY[], accZ[];
-        float intvls = 0;
+        float intvls = 1;
         int maxSize = 0;
 
         public SensorView(Context context){
@@ -243,13 +244,13 @@ public class MainActivity extends AppCompatActivity {
             paint = new Paint();
         }
 
-        private void drawAcc(Canvas canvas, float accX[], float accY[], float accZ[]) {
+        private void drawAcc(Canvas canvas) {
             paint.setColor(Color.GRAY);
             paint.setStrokeWidth(5);
             canvas.drawLine(0, 0, 0, y, paint);
             canvas.drawLine(0, y2, x, y2, paint);
-            canvas.drawLine(0, y2-20, x, y2-20, paint);
-            canvas.drawLine(0, y2-50, x, y2-50, paint);
+//            canvas.drawLine(0, y2-20, x, y2-20, paint);
+//            canvas.drawLine(0, y2-50, x, y2-50, paint);
             canvas.drawLine(0, y2*3, x, y2*3, paint);
             canvas.drawLine(0, y2 * 5, x, y2 * 5, paint);
             paint.setStrokeWidth(5);
@@ -260,11 +261,24 @@ public class MainActivity extends AppCompatActivity {
                 int nm = m + 1;
                 if (nm >= maxSize) nm -= maxSize;
                 paint.setColor(Color.RED);
-                canvas.drawLine((i + 1) * intvls, y2 -(accX[m] * q), i * intvls, y2 -(accX[nm] * q), paint);
+                canvas.drawLine((i + 1) * intvls, y2 -(sensorInfo.getAccSensor(0, m) * q), i * intvls, y2 -(sensorInfo.getAccSensor(0,nm) * q), paint);
                 paint.setColor(Color.BLUE);
-                canvas.drawLine((i + 1) * intvls, y2 * 3 -(accY[m] * q), i * intvls, y2 * 3 -(accY[nm] * q), paint);
+                canvas.drawLine((i + 1) * intvls, y2 * 3 -(sensorInfo.getAccSensor(1,m) * q), i * intvls, y2 * 3 -(sensorInfo.getAccSensor(1,nm) * q), paint);
                 paint.setColor(Color.GREEN);
-                canvas.drawLine((i + 1) * intvls, y2 * 5 -(accZ[m] * q), i * intvls, y2 * 5 -(accZ[nm] * q), paint);
+                canvas.drawLine((i + 1) * intvls, y2 * 5 -(sensorInfo.getAccSensor(2,m) * q), i * intvls, y2 * 5 -(sensorInfo.getAccSensor(2,nm) * q), paint);
+            }
+
+            for(int i=0; i<maxSize; i++) {
+                int m = (t2 - i);
+                if (m < 0) m += maxSize;
+                int nm = m + 1;
+                if (nm >= maxSize) nm -= maxSize;
+                paint.setColor(Color.CYAN);
+                canvas.drawLine((i + 1) * intvls, y2 -(sensorInfo.getData(0, m) * q), i * intvls, y2 -(sensorInfo.getData(0,nm) * q), paint);
+                paint.setColor(Color.MAGENTA);
+                canvas.drawLine((i + 1) * intvls, y2 * 3 -(sensorInfo.getData(1, m) * q), i * intvls, y2 * 3 -(sensorInfo.getData(1,nm) * q), paint);
+                paint.setColor(Color.YELLOW);
+                canvas.drawLine((i + 1) * intvls, y2 * 5 -(sensorInfo.getData(2, m) * q), i * intvls, y2 * 5 -(sensorInfo.getData(2,nm) * q), paint);
             }
         }
 
@@ -286,11 +300,9 @@ public class MainActivity extends AppCompatActivity {
                     if (maxSize == 0) {
                         maxSize = sensorInfo.getMaxSize();
                     }
-                    accX = sensorInfo.getAccX();
-                    accY = sensorInfo.getAccY();
-                    accZ = sensorInfo.getAccZ();
-                    t = sensorInfo.getIndex();
-                    drawAcc(canvas, accX, accY, accZ);
+                    t = sensorInfo.getT();
+                    t2 = sensorInfo.getT2();
+                    drawAcc(canvas);
                 } else {       }
                 invalidate();
             }

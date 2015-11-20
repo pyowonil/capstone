@@ -35,8 +35,9 @@ public class SensorService extends Service implements SensorEventListener{
     SensorManager sensorManager;
     Sensor accSensor, gyroSensor;
     float[] acc;
+    float[] gyro;
     SensorInfo sensorInfo;
-    private double dt = 1.0/100.0;//1.0/1000.0;
+    private double dt = 1.0/100.0;
     private double processNoiseStdev = 3;
     private double measurementNoiseStdev = 5;
     double m = 0;
@@ -89,7 +90,6 @@ public class SensorService extends Service implements SensorEventListener{
                     super.handleMessage(msg);
                     mText = "Default";
             }
-            //Toast.makeText(SensorService.this, mText, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -105,7 +105,7 @@ public class SensorService extends Service implements SensorEventListener{
         accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         acc = new float[3];
-        acc[0] = 9999;
+        gyro = new float[3];
         sensorInfo = new SensorInfo();
         Log.d(TAG, " 생성");
         Log.d(TAG," 센서 등록");
@@ -149,8 +149,7 @@ public class SensorService extends Service implements SensorEventListener{
                     etime = System.currentTimeMillis();
                     sensorInfo.setTime(etime-stime);
                     stime = etime;
-                    double dt = sensorInfo.getTime();
-
+                    sensorInfo.setAccSensor(acc);
 
                     // ------------------ Kalman Filter 적용 부 ------------------
                     // 보정 안한
@@ -167,31 +166,18 @@ public class SensorService extends Service implements SensorEventListener{
 //                    sensorInfo.setAccSensor((float) KF.getX().get(0, 0), (float) KF.getX().get(1, 0), (float) KF.getX().get(2, 0) );
                     // ----------------- Kalman Filter 적용 부 -------------------
 
-                    sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
-//                    sensorInfo.setAccG(gx, gy, gz);
+//                    sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-                    sensorInfo.setGyro(event.values);
-//                    etime = System.currentTimeMillis();
-//                    sensorInfo.setTime(etime-stime);
-//                    stime = etime;
-//                    double dt = sensorInfo.getTime();
-//                    //gea.setTime((float) dt);
-//                    gea.setW(sensorInfo.getGyro(0),sensorInfo.getGyro(1),sensorInfo.getGyro(2));
-//                    gea.getAngle(angles);
-//                    sensorInfo.setAccSensor(angles);
+                    gyro = filter.HDR(event.values);
+                    sensorInfo.setGyro(gyro);
                     break;
             }
         }
     }
 
-
-
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {    }
 
     @Override
     public IBinder onBind(Intent intent){
