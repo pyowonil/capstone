@@ -80,9 +80,9 @@ public class EulerKalman {
         phi = Math.atan2(2*(x.get(2,0)*x.get(3,0)+x.get(0,0)*x.get(1,0)), 1-2*(x.get(1,0)*x.get(1,0)+x.get(2,0)*x.get(2,0)));
         theta = -Math.asin(2*(x.get(1,0)*x.get(3,0)-x.get(0,0)*x.get(2,0)));
         psi = Math.atan2(2*(x.get(1,0)*x.get(2,0)+x.get(0,0)*x.get(3,0)), 1-2*(x.get(2,0)*x.get(2,0)+x.get(3,0)*x.get(3,0)));
-        v.set(0,0,phi);v.set(1,0,theta);v.set(2,0,psi);
-        v = C_bton.times(v);
-        phi = v.get(0,0); theta = v.get(1,0); psi = v.get(2,0);
+        //v.set(0,0,phi);v.set(1,0,theta);v.set(2,0,psi);
+        //v = C_bton.times(v);
+        //phi = v.get(0,0); theta = v.get(1,0); psi = v.get(2,0);
     }
 
     public void set(double p, double q, double r, double dt, double fx, double fy, double fz) {

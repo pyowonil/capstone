@@ -62,6 +62,7 @@ public class SensorInfo {
         this.acc[0][t] = a[0];
         this.acc[1][t] = a[1];
         this.acc[2][t] = a[2];
+        ek.z_accel(a[0],a[1],a[2]);
 
 //        svm = (float)sqrt(pow(a[0],2) + pow(a[1],2) + pow(a[2],2))*20;
 
@@ -104,11 +105,14 @@ public class SensorInfo {
         this.gyro[0] = gyro[0];
         this.gyro[1] = gyro[1];
         this.gyro[2] = gyro[2];
-        ek.set(gyro[0], gyro[1], gyro[2], getTime(), acc[0][t-1], acc[1][t-1], acc[2][t-1]);
+        //ek.set(gyro[0], gyro[1], gyro[2], getTime(), acc[0][t-1], acc[1][t-1], acc[2][t-1]);
+        ek.A(gyro[0],gyro[1],gyro[2],getTime());
+        //ek.C_bton();
         ek.run();
-        this.data[0][t2] = (float)ek.phi;
-        this.data[1][t2] = (float)ek.theta;
-        this.data[2][t2] = (float)ek.psi;
+        this.data[0][t2] = (float)ek.phi*5;
+        this.data[1][t2] = (float)ek.theta*5;
+        this.data[2][t2] = (float)ek.psi*5;
+        System.out.println("PHI : " + Double.toString(ek.phi) + "\nTHETA : " + Double.toString(ek.theta) + "\nPSI : " + Double.toString(ek.psi));
         t2++;
         if(t2 >= size) t2 = 0;
     }
