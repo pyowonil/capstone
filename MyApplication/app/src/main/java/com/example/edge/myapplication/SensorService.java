@@ -154,9 +154,10 @@ public class SensorService extends Service implements SensorEventListener{
                     acc[2] = acc[2] - gz;
 
                     // EulerAngles test ------------------------------
-                    acc[0] = (float)(m_euler_angles.getPhi() * 180/31.41592);
-                    acc[1] = (float)(m_euler_angles.getTheta() * 180/31.41592);
-                    acc[2] = (float)(m_euler_angles.getPsi() * 180/31.41592);
+                    acc = m_euler_angles.getFn(acc);
+                    //acc[0] = (float)(m_euler_angles.getPhi() * 180/31.41592);
+                    //acc[1] = (float)(m_euler_angles.getTheta() * 180/31.41592);
+                    //acc[2] = (float)(m_euler_angles.getPsi() * 180/31.41592);
                     //acc[0] = (float)(m_euler_kalman.getPhi() * 36/31.41592);
                     //acc[1] = (float)(m_euler_kalman.getTheta() * 36/31.41592);
                     //acc[2] = (float)(m_euler_kalman.getPsi() * 36/31.41592);

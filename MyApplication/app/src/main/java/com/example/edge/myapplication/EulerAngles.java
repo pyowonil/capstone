@@ -36,7 +36,7 @@ public class EulerAngles {
     //private Matrix m_nCb;
 
     // Convert Body frame to Navigation frame Matrix
-    //private Matrix m_bCn;
+    private Matrix m_bCn;
 
     // Convert m_b_w to m_n_w Matrix, useing M * m_b_w -> m_n_w
     private Matrix m_C1T;
@@ -65,6 +65,9 @@ public class EulerAngles {
         m_C1T = new Matrix(new double[][]{
                 {0,0,0},{0,0,0},{0,0,0}
         });
+        m_bCn = new Matrix(new double[][]{
+                {0,0,0},{0,0,0},{0,0,0}
+        });
     }
     // ---------- set 함수 ----------
     // 위도 설정
@@ -81,20 +84,21 @@ public class EulerAngles {
         setC1T();
     }
     // Body frame 의 각속도 설정
-    public void setW(double x, double y, double z) {
-        m_b_w.set(0,0,x);
-        m_b_w.set(1,0,y);
-        m_b_w.set(2,0,z);
-        m_n_w = m_C1T.times(m_b_w);
-        psi = -Math.atan(m_n_w.get(1,0)/m_n_w.get(0,0));
-    }
+    //public void setW(double x, double y, double z) {
+    //    m_b_w.set(0,0,x);
+    //    m_b_w.set(1,0,y);
+    //    m_b_w.set(2,0,z);
+    //    m_n_w = m_C1T.times(m_b_w);
+    //    psi = -Math.atan(m_n_w.get(1,0)/m_n_w.get(0,0));
+    //}
     // Body frame 의 각속도 대신 자기장 센서 설정
     public void setH(double x, double y, double z) {
         m_b_w.set(0,0,x);
         m_b_w.set(1,0,y);
         m_b_w.set(2,0,z);
         m_n_w = m_C1T.times(m_b_w);
-        psi = Math.atan(m_n_w.get(1,0)/m_n_w.get(0,0));
+        psi = Math.atan(m_n_w.get(1, 0) / m_n_w.get(0, 0));
+        setbCn();
     }
     // C1T 생성
     private void setC1T() {
@@ -107,6 +111,18 @@ public class EulerAngles {
         m_C1T.set(1,0,0);           m_C1T.set(1,1,cosphi);          m_C1T.set(1,2,-sinphi);
         m_C1T.set(2,0,-sintheta);   m_C1T.set(2,1,sinphi*costheta); m_C1T.set(2,2,cosphi*costheta);
     }
+    private void setbCn() {
+        double sinphi = Math.sin(phi);
+        double cosphi = Math.cos(phi);
+        double sintheta = Math.sin(theta);
+        double costheta = Math.cos(theta);
+        double sinpsi = Math.sin(psi);
+        double cospsi = Math.cos(psi);
+
+        m_bCn.set(0,0,costheta*cospsi);                         m_bCn.set(0,1,costheta*sinpsi);                         m_bCn.set(0,2,-sintheta);
+        m_bCn.set(1,0,-cosphi*sinpsi+sinphi*sintheta*cospsi);   m_bCn.set(1,1,cosphi*cospsi+sinphi*sintheta*sinpsi);    m_bCn.set(1,2,sinphi*costheta);
+        m_bCn.set(2,0,sinphi*sinpsi+cosphi*sintheta*cospsi);    m_bCn.set(2,1,-sinphi*cospsi+cosphi*sintheta*sinpsi);   m_bCn.set(2,2,cosphi*costheta);
+    }
 
     // ---------- get 함수 ----------
     public double getPhi() {
@@ -117,5 +133,14 @@ public class EulerAngles {
     }
     public double getPsi() {
         return psi;
+    }
+    public Matrix getbCn() {
+        return m_bCn;
+    }
+    public float[] getFn(float[] Fb) {
+        m_b_f.set(0,0,Fb[0]); m_b_f.set(1,0,Fb[1]); m_b_f.set(2,0,Fb[2]);
+        m_b_f = m_bCn.times(m_b_f);
+        Fb[0] = (float) m_b_f.get(0,0); Fb[1] = (float) m_b_f.get(1,0); Fb[2] = (float) m_b_f.get(2,0);
+        return Fb;
     }
 }
