@@ -5,143 +5,107 @@ import Jama.Matrix;
  * Created by pyowo on 2015-11-17.
  */
 public class EulerKalman {
-    // function[phi theta psi] <- EulerKalman(A, z)
+    // ---------- * ---------- * ---------- * ---------- Variables ---------- * ---------- * ---------- * ----------
+    // 잡음의 공분산 행렬 Q, R (4 x 4)
+    private Matrix m_Q;
+    private Matrix m_R;
+    // 상태변수 (쿼터니언) x (4 x 1)
+    private Matrix m_x;
+    private Matrix m_xp;
+    // 오차 공분산 행렬 P (4 x 4)
+    private Matrix m_P;
+    private Matrix m_Pp;
+    // 상태전이행렬 A (4 x 4)
+    private Matrix m_A;
+    // 측정값 z (4 x 1)
+    private Matrix m_z;
+    // 칼만이득 K (4 x 4)
+    private Matrix m_K;
 
-    private Matrix H, Q, R, x, P;
-    private Matrix A, z;
-    private double wie = 15.0/(60*60), L=37.4481691, g=9.81;
-    private Matrix C_bton, bton_tmp1, bton_tmp2, f, w, v;
+    //private Matrix m_I;
+
+    // Euler Angles
+    private EulerAngles m_euler_angles = new EulerAngles();
+
+    // 결과값
+    private double phi=0, theta=0, psi=0;
+
+    private long starttime = System.currentTimeMillis();
+
+    // ---------- * ---------- * ---------- * ---------- Methods ---------- * ---------- * ---------- * ----------
+    // 생성자
     EulerKalman() {
-        // H : 4 x 4 Matrix
-        // Q : 4 x 4 Matrix
-        // R : 4 x 4 Matrix
-        // x : 4 x 1 Matrix
-        // P : 4 x 4 Matrix
-        H = new Matrix(new double[][]{
-                {1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}
-        });
-        Q = new Matrix(new double[][]{
-                {0.0001,0,0,0},{0,0.0001,0,0},{0,0,0.0001,0},{0,0,0,0.0001}
-        });
-        R = new Matrix(new double[][]{
-                {10,0,0,0},{0,10,0,0},{0,0,10,0},{0,0,0,10}
-        });
-        x = new Matrix(new double[][]{
-                {1},{0},{0},{0}
-        });
-        P = new Matrix(new double[][]{
-                {1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}
-        });
-
-        // A : 4 x 4 Matrix
-        // z : 4 x 1 Matrix
-        A = new Matrix(new double[][]{
-                {1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}
-        });
-        z = new Matrix(new double[][]{
-                {0},{0},{0},{0}
-        });
-
-        // wie : 지구자전각속도
-        // L : 위도
-        // C_bton : 3 x 3 Matrix, Body frame to NED frame, N(North), E(East), D(Down?)
-        C_bton = new Matrix(new double[][]{
-                {0,0,0},{0,0,0},{0,0,0}
-        });
-        bton_tmp1 = new Matrix(new double[][]{
-                {0,0,0},{0,0,0},{0,0,0}
-        });
-        bton_tmp2 = new Matrix(new double[][]{
-                {0,0,0},{0,0,0},{0,0,0}
-        });
-        // f : 3 x 1 Matrix, accel datas
-        // w : 3 x 1 Matrix, gyro datas
-        // v : 3 x 1 Matrix, f x w
-        f = new Matrix(new double[][]{
-                {0},{0},{0}
-        });
-        w = new Matrix(new double[][]{
-                {0},{0},{0}
-        });
-        v = new Matrix(new double[][]{
-                {0},{0},{0}
-        });
+        m_Q = new Matrix(new double[][]{ {0.0001,0,0,0}, {0,0.0001,0,0}, {0,0,0.0001,0}, {0,0,0,0.0001} });
+        m_R = new Matrix(new double[][]{ {10,0,0,0}, {0,10,0,0}, {0,0,10,0}, {0,0,0,10} });
+        m_x = new Matrix(new double[][]{ {1},{0},{0},{0} });
+        m_xp = new Matrix(new double[][]{ {1},{0},{0},{0} });
+        m_P = new Matrix(new double[][]{ {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} });
+        m_Pp = new Matrix(new double[][]{ {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} });
+        m_A = new Matrix(new double[][]{ {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} });
+        m_z = new Matrix(new double[][]{ {1},{0},{0},{0} });
+        m_K = new Matrix(new double[][]{ {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} });
+        //m_I = new Matrix(new double[][]{ {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} });
     }
 
-    private Matrix xp, Pp, K;
-    public double phi, theta, psi;
-    public void run() {
-        xp = A.times(x);
-        Pp = A.times(P).times(A.transpose()).plus(Q);
-        K = Pp.times(H.transpose()).times( (H.times(Pp).times(H.transpose()).plus(R).inverse()) );
-        x = xp.plus( (K.times( (z.minus(H.times(xp))) )) );
-        P = Pp.minus( (K.times(H).times(Pp)) );
-
-        phi = Math.atan2(2*(x.get(2,0)*x.get(3,0)+x.get(0,0)*x.get(1,0)), 1-2*(x.get(1,0)*x.get(1,0)+x.get(2,0)*x.get(2,0)));
-        theta = -Math.asin(2*(x.get(1,0)*x.get(3,0)-x.get(0,0)*x.get(2,0)));
-        psi = Math.atan2(2*(x.get(1,0)*x.get(2,0)+x.get(0,0)*x.get(3,0)), 1-2*(x.get(2,0)*x.get(2,0)+x.get(3,0)*x.get(3,0)));
-        //v.set(0,0,phi);v.set(1,0,theta);v.set(2,0,psi);
-        //v = C_bton.times(v);
-        //phi = v.get(0,0); theta = v.get(1,0); psi = v.get(2,0);
+    // 1. set A
+    public void setA(double p, double q, double r, long time) {
+        if(starttime == -1) starttime = time;
+        double dt = (time - starttime)*0.0001; // 단위 sec
+        starttime = time;
+        double hp = time*p*0.5;
+        double hq = time*q*0.5;
+        double hr = time*r*0.5;
+        m_A.set(0,0,1);         m_A.set(0,1,-hp);       m_A.set(0,2,-hq);       m_A.set(0,3,-hr);
+        m_A.set(1,0,hp);        m_A.set(1,1,1);         m_A.set(1,2,hr);        m_A.set(1,3,-hq);
+        m_A.set(2,0,hq);        m_A.set(2,1,-hr);       m_A.set(2,2,1);        m_A.set(2,3,hp);
+        m_A.set(3,0,hr);        m_A.set(3,1,hq);        m_A.set(3,2,-hp);       m_A.set(3,3,1);
     }
 
-    public void set(double p, double q, double r, double dt, double fx, double fy, double fz) {
-        A(p,q,r,dt);
-        C_bton();
-        z_accel(fx,fy,fz);
+    // 2 - 1. set phi, theta
+    public void setAccel(double fx, double fy, double fz) {
+        m_euler_angles.setF(fx, fy, fz);
     }
-    public void A(double p, double q, double r, double dt) {
-        w.set(0,0,p);w.set(1,0,q);w.set(2,0,r);
-        p = p * dt * 0.5;
-        q = q * dt * 0.5;
-        r = r * dt * 0.5;
-        A.set(0,1,-p);  A.set(0,2,-q);  A.set(0,3,-r);
-        A.set(1,0,p);                   A.set(1,2,r);   A.set(1,2,-q);
-        A.set(2,0,q);   A.set(2,1,-r);                  A.set(2,3,p);
-        A.set(3,0,r);   A.set(3,1,q);   A.set(3,2,-p);
-    }
-    public void z(double _phi, double _theta, double _psi) {
-        _phi = _phi * 0.5;
-        _theta = _theta * 0.5;
-        _psi = _psi * 0.5;
-
-        double sinhphi,coshphi,sinhtheta,coshtheta,sinhpsi,coshpsi;
-        sinhphi = Math.sin(_phi);       coshphi = Math.cos(_phi);
-        sinhtheta = Math.sin(_theta);   coshtheta = Math.cos(_theta);
-        sinhpsi = Math.sin(_psi);       coshpsi = Math.cos(_psi);
-
-        z.set(0,0, ( coshphi*coshtheta*coshpsi + sinhphi*sinhtheta*sinhpsi ));
-        z.set(1,0, ( sinhphi*coshtheta*coshpsi - coshphi*sinhtheta*sinhpsi ));
-        z.set(2,0, ( coshphi*sinhtheta*coshpsi + sinhphi*coshtheta*sinhpsi ));
-        z.set(3,0, ( coshphi*coshtheta*sinhpsi - sinhphi*sinhtheta*coshpsi ));
+    // 2 - 2. set psi
+    public void setMagnetic(double hx, double hy, double hz) {
+        m_euler_angles.setH(hx, hy, hz);
     }
 
-    public void z_accel(double fx, double fy, double fz) {
-        double _phi = Math.atan(fy/fz);
-        double _theta = Math.atan(fx/(Math.sqrt(fy*fy+fz*fz)));
-        double sinphi,cosphi,sintheta,costheta;
-        sinphi = Math.sin(_phi); cosphi = Math.cos(_phi); sintheta = Math.sin(_theta); costheta = Math.cos(_theta);
-        double _psi = Math.atan( ((w.get(2,0)*sinphi-w.get(1,0)*cosphi)/(w.get(0,0)*costheta+w.get(1,0)*sinphi*sintheta+w.get(2,0)*cosphi*sintheta)) );
-        z(_phi, _theta, _psi);
+    // 3. set z
+    public void setz() {
+        double sinphi = Math.sin(m_euler_angles.getPhi());
+        double cosphi = Math.cos(m_euler_angles.getPhi());
+        double sintheta = Math.sin(m_euler_angles.getTheta());
+        double costheta = Math.cos(m_euler_angles.getTheta());
+        double sinpsi = Math.sin(m_euler_angles.getPsi());
+        double cospsi = Math.cos(m_euler_angles.getPsi());
+        m_z.set(0,0,cosphi*costheta*cospsi + sinphi*sintheta*sinpsi);
+        m_z.set(1,0,sinphi*costheta*cospsi - cosphi*sintheta*sinpsi);
+        m_z.set(2,0,cosphi*sintheta*cospsi + sinphi*costheta*sinpsi);
+        m_z.set(3,0,cosphi*costheta*sinpsi - sinphi*sintheta*cospsi);
     }
 
-    public void C_bton() {
-        v.set(0, 0, f.get(1, 0)*w.get(2,0) - f.get(2, 0) * w.get(1, 0));
-        v.set(1, 0, f.get(2,0)*w.get(0,0)-f.get(0,0)*w.get(2,0));
-        v.set(2,0,f.get(0,0)*w.get(1, 0) - f.get(1,0)*w.get(0,0));
-        double tanL = Math.tan(L);
-        double cosL = Math.cos(L);
+    // 4. get phi, theta, psi
+    public void estimate() {
+        m_xp = m_A.times(m_x);
+        m_Pp = m_A.times(m_P).times(m_A.transpose()).plus(m_Q);
+        m_K = m_Pp.times((m_Pp.plus(m_R).inverse()));
+        m_x = m_xp.plus(m_K.times(m_z.minus(m_xp)));
+        m_P = m_Pp.minus(m_K.times(m_Pp));
 
-        bton_tmp1.set(0,0,-(tanL/g));
-        bton_tmp1.set(2,0,-1/g);
-        bton_tmp1.set(1,0,(1/(wie*cosL)));
-        bton_tmp1.set(2,1,-(1/g*wie*cosL));
-
-        bton_tmp2.set(0,0,f.get(0,0)); bton_tmp2.set(0,1,f.get(1,0)); bton_tmp2.set(0,2,f.get(2,0));
-        bton_tmp2.set(1,0,w.get(0,0)); bton_tmp2.set(1,1,w.get(1,0)); bton_tmp2.set(1,2,w.get(2,0));
-        bton_tmp2.set(2,0,v.get(0,0)); bton_tmp2.set(2,1,v.get(1,0)); bton_tmp2.set(2,2,v.get(2,0));
-
-        C_bton = bton_tmp1.times(bton_tmp2);
+        double a=m_x.get(0,0), b=m_x.get(1,0), c=m_x.get(2,0), d=m_x.get(3,0);
+        phi = Math.atan2(2*(c*d+a*b), 1-2*(b*b+c*c));
+        theta = -Math.asin(2*(b*d-a*c));
+        psi = Math.atan2(2*(b*c+a*d), 1-2*(c*c+d*d));
     }
 
+    // get 함수
+    public double getPhi() {
+        return phi;
+    }
+    public double getTheta() {
+        return theta;
+    }
+    public double getPsi() {
+        return psi;
+    }
 }

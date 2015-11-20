@@ -61,6 +61,7 @@ public class SensorService extends Service implements SensorEventListener{
 
     EKF ekf = new EKF();
     EulerAngles m_euler_angles = new EulerAngles();
+    //EulerKalman m_euler_kalman = new EulerKalman();
 
     // create handler class
     class ServiceHandler extends Handler{
@@ -141,6 +142,7 @@ public class SensorService extends Service implements SensorEventListener{
 
                     // EulerAngles test ------------------------------
                     m_euler_angles.setF(event.values[0], event.values[1], event.values[2]);
+                    //m_euler_kalman.setAccel(event.values[0], event.values[1], event.values[2]);
                     // ------------------------------ EulerAngles test
 
                     // 중력가속도 제거
@@ -150,17 +152,21 @@ public class SensorService extends Service implements SensorEventListener{
                     acc[0] = acc[0] - gx;
                     acc[1] = acc[1] - gy;
                     acc[2] = acc[2] - gz;
+
+                    // EulerAngles test ------------------------------
+                    acc[0] = (float)(m_euler_angles.getPhi() * 180/31.41592);
+                    acc[1] = (float)(m_euler_angles.getTheta() * 180/31.41592);
+                    acc[2] = (float)(m_euler_angles.getPsi() * 180/31.41592);
+                    //acc[0] = (float)(m_euler_kalman.getPhi() * 36/31.41592);
+                    //acc[1] = (float)(m_euler_kalman.getTheta() * 36/31.41592);
+                    //acc[2] = (float)(m_euler_kalman.getPsi() * 36/31.41592);
+                    // ------------------------------ EulerAngles test
+
                     // HSR 적용
                     acc = filter.HSR(acc);
                     etime = System.currentTimeMillis();
                     sensorInfo.setTime(etime-stime);
                     stime = etime;
-
-                    // EulerAngles test ------------------------------
-                    acc[0] = (float) m_euler_angles.getPhi();
-                    acc[1] = (float) m_euler_angles.getTheta();
-                    acc[2] = (float) m_euler_angles.getPsi();
-                    // ------------------------------ EulerAngles test
 
                     sensorInfo.setAccSensor(acc);
 
@@ -183,13 +189,18 @@ public class SensorService extends Service implements SensorEventListener{
                     break;
                 case Sensor.TYPE_GYROSCOPE:
                     // EulerAngles test ------------------------------
-                    //m_euler_angles.setW(event.values[0], event.values[1], event.values[2]);
+                    //m_euler_kalman.setA(event.values[0], event.values[1], event.values[2], System.currentTimeMillis());
+                    //m_euler_kalman.setz();
+                    //m_euler_kalman.estimate();
                     // ------------------------------ EulerAngles test
                     gyro = filter.HDR(event.values);
                     sensorInfo.setGyro(gyro);
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
+                    // EulerAngles test ------------------------------
                     m_euler_angles.setH(event.values[0], event.values[1], event.values[2]);
+                    //m_euler_kalman.setMagnetic(event.values[0], event.values[1], event.values[2]);
+                    // ------------------------------ EulerAngles test
                     break;
             }
         }
