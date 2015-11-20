@@ -82,6 +82,17 @@ public class SensorInfo implements Parcelable{
 
     float[] reduc = new float[3];
 
+    public void setAccSensor(float[] a){
+        acc[0] = a[0];
+        acc[1] = a[1];
+        acc[2] = a[2];
+        this.accX[t] = a[0];
+        this.accY[t] = a[1];
+        this.accZ[t] = a[2];
+        t++;
+        if(t >= size) t = 0;
+    }
+
     public void setAccSensor(float x, float y, float z){
         if(cnt < 1000){
             reduc[0] += x;
@@ -93,78 +104,83 @@ public class SensorInfo implements Parcelable{
             bias[1] = reduc[1]/cnt;
             bias[2] = reduc[2]/cnt;
         }
-        svm = (float)sqrt(pow(x,2) + pow(y,2) + pow(z,2));
-
+        svm = (float)sqrt(pow(x,2) + pow(y,2) + pow(z,2))*20;
+//        svm = (float)(pow(x,2) + pow(y,2) + pow(z,2));
         // acc[0]는 이동거리
+//        Log.d("[센서] ", "SVM 값 " + svm);
         acc[0] = x;
-        if(Math.abs(acc[0]) > 10e17) acc[0] /= 10e18;
         acc[1] = y;
         acc[2] = z;
-        this.accX[t] = x;
-        this.accY[t] = y;
-        this.accZ[t] = z;
-        t++;
-        if(t >= size) t = 0;
 
-        updatePeakData();
+//        this.accX[t] = x;
+//        this.accY[t] = y;
+//        this.accZ[t] = z;
+//        t++;
+//        if(t >= size) t = 0;
+
+//        updatePeakData();
 //        movingSVM(svm);
     }
 
-    public void updatePeakData(){
-        float tmp = 0;
-        float tmp2 = 0;
-        for(int i=0; i<5; i++){
-            int idx = peakIndex+i;
-            if(idx == 6) idx -= 6;
-            tmp += peakData[idx];
-            idx++;
-            if(idx == 6) idx -= 6;
-            tmp2 += peakData[idx];
-        }
 
-        float peak = (0.5f*tmp-0.5f*tmp2)*0.1f;
-        float a = 0;
-        if(peak < 1.5){
-            a = 2.9f;
-        }else if(1.5 <= peak && peak < 1.8){
-            a = 3.1f;
-        }else if(1.8 <= peak && peak < 2.0){
-            a = 2.5f;
-        }else if(2.0 < peak){
-            a = 2.2f;
-        }
-        thresValue = peak +(peakData[peakIndex]*(a/5));
-        peakIndex++;
-        if(peakIndex == 6) peakIndex -= 6;
+
+    public void updatePeakData(){
+
     }
+
+    float minThreshold = 20;
+    float maxThreshold = 50;
+    float Pn1 = minThreshold, Pn2 = minThreshold;
+    float Mn1 = maxThreshold, Mn2 = maxThreshold;
+    float K = 0;
+    float C1 = 0.8f;
+    float C2 = 0.8f;
+    boolean th = false;
 
     private void movingSVM(float svm){
-        if(svm > thresValue && !isThres){
-            Log.d("[센서] ", "경계를 넘었습니다." + svm);
-            maxSVM = 0;
-            isThres = true;
-        }else{
-            if(isThres){
-                if(svm > thresValue) {
-                    if(maxSVM < svm){
-                        Log.d("[센서] ", "최대치 갱신." + svm);
-                        maxSVM = svm;
-                    }
-                }else if(svm <= thresValue){
-                    Log.d("[센서] ", "경계를 내려갔습니다." + maxSVM);
-                    thres = maxSVM;
-                    isThres = false;
-                    peakData[peakIndex] = maxSVM;
+        if(minThreshold <= svm){
+            if(maxThreshold <= svm){
+                if(!th) th = true;
+                else{
+                    if(Pn1 < svm) Pn1 = svm;
+                }
+            }else{
+                if(th){
                     step++;
+                    th = false;
+                    Pn2 = Pn1;
+                    Mn2 = Mn1;
+                    if(Pn1 < Pn2){
+                        K = Pn1;
+                    }else{
+                        K = Pn2;
+                    }
+                    float t = (Mn1+Mn2)/2;
+                    minThreshold = t + (K-t)*C1;
+                    maxThreshold = minThreshold + (float)sqrt(abs(K-minThreshold))*C2;
+                    Pn1 = minThreshold;
+                    Mn1 = maxThreshold;
                 }
             }
+        }else{
+            if(Mn1 > svm) Mn1 = svm;
         }
+
     }
+
+    EulerKalman ek = new EulerKalman();
 
     public void setGyro(float[] gyro){
         this.gyro[0] = gyro[0];
         this.gyro[1] = gyro[1];
         this.gyro[2] = gyro[2];
+        ek.set(gyro[0],gyro[1],gyro[2],getTime(),acc[0],acc[1],acc[2]);
+        ek.run();
+        this.accX[t] = (float)ek.phi;
+        this.accY[t] = (float)ek.theta;
+        this.accZ[t] = (float)ek.psi;
+        t++;
+        if(t >= size) t = 0;
     }
 
     public float getGyro(int idx){
@@ -187,7 +203,7 @@ public class SensorInfo implements Parcelable{
     }
 
     public float getThres(){
-        return thres;
+        return thresValue;
     }
 
     public void setAccG(float x, float y, float z){

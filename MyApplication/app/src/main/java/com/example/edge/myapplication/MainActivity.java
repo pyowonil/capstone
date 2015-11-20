@@ -59,16 +59,18 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg){
             switch(msg.what){
                 case SensorService.MSG_SET_VALUE:
-                    Log.d(TAG, " 서비스로부터 값을 전달 받음");
+//                    Log.d(TAG, " 서비스로부터 값을 전달 받음");
                     sensorInfo = (SensorInfo)msg.obj;
                     if(sensorInfo != null){
-                        Log.d(TAG, " 가속도 값이 있음");
-//                        acctext.setText("x : " + sensorInfo.getAccSensor(0) + "\ny : " + sensorInfo.getAccSensor(1) + "\nz : " + sensorInfo.getAccSensor(2));
+//                        Log.d(TAG, " 가속도 값이 있음");
+                        acctext.setText("x : " + sensorInfo.getAccSensor(0) + "\ny : " + sensorInfo.getAccSensor(1) + "\nz : " + sensorInfo.getAccSensor(2));
 //                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getAccSensor(0) + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1)
 //                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2) + "\n시간(sec) : " + sensorInfo.getTime());
-                        mCallbackText.setText("ThresSVM : " + sensorInfo.getThres() + "\nSVM : " + sensorInfo.getSVM() + "\nSTEP : " + sensorInfo.getStep());
+//                        mCallbackText.setText("Pn1 : " + sensorInfo.Pn1 + "\nPn2 : " + sensorInfo.Pn2
+//                                + "\nMn1 : " + sensorInfo.Mn1 + "\nMn2 : " + sensorInfo.Mn2 + "\nSTEP : " + sensorInfo.getStep());
+                        mCallbackText.setText("PHI : " + sensorInfo.ek.phi + "\nTHETA : " + sensorInfo.ek.theta + "\nPSI : " + sensorInfo.ek.psi);
                     }else{
-                        Log.d(TAG, " 가속도 값이 없음");
+//                        Log.d(TAG, " 가속도 값이 없음");
                         acctext.setText("not value");
                     }
                     try {
@@ -230,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         float y = 0;
         private int t = 0;
         float y2 = 0;
-        float q = 20;
+        float q = 1;
         private Paint paint;
         private float accX[], accY[], accZ[];
         float intvls = 0;
@@ -241,12 +243,13 @@ public class MainActivity extends AppCompatActivity {
             paint = new Paint();
         }
 
-        private void drawAcc(Canvas canvas, float accX[], float accY[], float accZ[]){
-            Log.d(TAG, " 가속도 드로잉");
+        private void drawAcc(Canvas canvas, float accX[], float accY[], float accZ[]) {
             paint.setColor(Color.GRAY);
             paint.setStrokeWidth(5);
             canvas.drawLine(0, 0, 0, y, paint);
             canvas.drawLine(0, y2, x, y2, paint);
+            canvas.drawLine(0, y2-20, x, y2-20, paint);
+            canvas.drawLine(0, y2-50, x, y2-50, paint);
             canvas.drawLine(0, y2*3, x, y2*3, paint);
             canvas.drawLine(0, y2 * 5, x, y2 * 5, paint);
             paint.setStrokeWidth(5);

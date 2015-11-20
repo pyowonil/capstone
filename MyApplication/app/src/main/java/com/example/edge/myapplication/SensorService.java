@@ -75,7 +75,7 @@ public class SensorService extends Service implements SensorEventListener{
                     mAcitivityMessenger = null;
                     break;
                 case MSG_SET_VALUE:
-                    Log.d(TAG," 클라이언트로 값 전달");
+//                    Log.d(TAG," 클라이언트로 값 전달");
                     if(mAcitivityMessenger == null) break;
                     try{
                         Message msg2 = Message.obtain(null, MSG_SET_VALUE, mValue, 0);
@@ -122,12 +122,17 @@ public class SensorService extends Service implements SensorEventListener{
 
     long stime = 0;
     long etime = 0;
+    GyroToEulerAngle gea = new GyroToEulerAngle();
+
+    float[] angles = new float[3];
+
 
     @Override
     public void onSensorChanged(SensorEvent event) {
         synchronized (this){
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
+                    if(stime == 0) stime = System.currentTimeMillis();
                     acc[0] = event.values[0];
                     acc[1] = event.values[1];
                     acc[2] = event.values[2];
@@ -141,10 +146,11 @@ public class SensorService extends Service implements SensorEventListener{
                     acc[2] = acc[2] - gz;
                     // HSR 적용
                     acc = filter.HSR(acc);
-//                    etime = System.currentTimeMillis();
-//                    sensorInfo.setTime(etime-stime);
-//                    stime = etime;
-//                    double dt = sensorInfo.getTime();
+                    etime = System.currentTimeMillis();
+                    sensorInfo.setTime(etime-stime);
+                    stime = etime;
+                    double dt = sensorInfo.getTime();
+
 
                     // ------------------ Kalman Filter 적용 부 ------------------
                     // 보정 안한
@@ -158,21 +164,28 @@ public class SensorService extends Service implements SensorEventListener{
 //                    KF.update(dt);
 //                    KF.predict();
 //                    KF.correct(new Matrix(new double[][]{{m}}));
-                    //                    sensorInfo.setAccSensor((float) KF.getX().get(0, 0), (float) KF.getX().get(1, 0), (float) KF.getX().get(2, 0) );
+//                    sensorInfo.setAccSensor((float) KF.getX().get(0, 0), (float) KF.getX().get(1, 0), (float) KF.getX().get(2, 0) );
                     // ----------------- Kalman Filter 적용 부 -------------------
-
-
-
 
                     sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
 //                    sensorInfo.setAccG(gx, gy, gz);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
                     sensorInfo.setGyro(event.values);
+//                    etime = System.currentTimeMillis();
+//                    sensorInfo.setTime(etime-stime);
+//                    stime = etime;
+//                    double dt = sensorInfo.getTime();
+//                    //gea.setTime((float) dt);
+//                    gea.setW(sensorInfo.getGyro(0),sensorInfo.getGyro(1),sensorInfo.getGyro(2));
+//                    gea.getAngle(angles);
+//                    sensorInfo.setAccSensor(angles);
                     break;
             }
         }
     }
+
+
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {

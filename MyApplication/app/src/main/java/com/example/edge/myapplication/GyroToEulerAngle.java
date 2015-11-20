@@ -37,7 +37,7 @@ public class GyroToEulerAngle {
         m_angle_deltay = wy*cosx - wz*sinx;
         m_angle_deltaz = wy*sinx*secy + wz*cosx*secy;
 
-        convert();
+         convert();
     }
     public void getAngle(float[] angles) {
         angles[0] = m_anglex;
