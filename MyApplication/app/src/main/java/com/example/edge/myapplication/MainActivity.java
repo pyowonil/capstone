@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView m_txtv_gpsinfo;
     // --------------------------------- GPS
 
-
     class ActivityHandler extends Handler {
         @Override
         public void handleMessage(Message msg){
@@ -62,22 +61,31 @@ public class MainActivity extends AppCompatActivity {
                     sensorInfo = (SensorInfo)msg.obj;
                     if(sensorInfo != null){
 //                        Log.d(TAG, " 가속도 값이 있음");
-                        int i = sensorInfo.getT();
+                        int i = sensorInfo.getT2();
                         if(i == 0) i = 299;
+//                        acctext.setText("x : " + sensorInfo.getData(0,i) + "\ny : " + sensorInfo.getData(1,i) + "\nz : " + sensorInfo.getData(2,i));
                         acctext.setText("x : " + sensorInfo.getAccSensor(0,i) + "\ny : " + sensorInfo.getAccSensor(1,i) + "\nz : " + sensorInfo.getAccSensor(2,i));
-//                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getAccSensor(0) + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1)
-//                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2) + "\n시간(sec) : " + sensorInfo.getTime());
-//                        mCallbackText.setText("Pn1 : " + sensorInfo.Pn1 + "\nPn2 : " + sensorInfo.Pn2
-//                                + "\nMn1 : " + sensorInfo.Mn1 + "\nMn2 : " + sensorInfo.Mn2 + "\nSTEP : " + sensorInfo.getStep());
-                        i = sensorInfo.getT2();
-                        if(i == 0) i = 299;
-                        mCallbackText.setText("PHI : " + sensorInfo.getData(0,i) + "\nTHETA : " + sensorInfo.getData(1,i) + "\nPSI : " + sensorInfo.getData(2,i));
+//                        mCallbackText.setText("TIME : " + m_gps.time + "\nDISTANCE : " + sensorInfo.getMeter() + "\nSPEED : " + m_gps.speed
+//                                + "\nLAT : " + m_gps.getLatitude()+ "\nLON : " + m_gps.getLongitude() + "\nALT : " + m_gps.getAltitude()+ "\nBER : " + m_gps.bearing);
+//                        mCallbackText.setText("TM_X : " + sensorInfo.getTm_x() + "\nTM_Y : " + sensorInfo.getTm_y() + "\nSPEED : " + sensorInfo.getSpeed()
+//                                + "\nLAT : " + sensorInfo.getLatitude()+ "\nLON : " + sensorInfo.getLongitude() + "\nALT : " + sensorInfo.getAltitude()+ "\nBER : " + sensorInfo.getBearing());
+//                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getMeter() + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1,i)
+//                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2,i) + "\n시간(sec) : " + sensorInfo.getTime());
+                        mCallbackText.setText("Pn1 : " + sensorInfo.Pn1 + "\tPn2 : " + sensorInfo.Pn2
+                                + "\nMn1 : " + sensorInfo.Mn1 + "\tMn2 : " + sensorInfo.Mn2 + "\nMaxThres : " + sensorInfo.maxThreshold + "\tMinThres : " + sensorInfo.minThreshold +
+                                "\nSTEP : " + sensorInfo.getStep());
+//                        i = sensorInfo.getT2();
+//                        if(i == 0) i = 299;
+//                        mCallbackText.setText("PHI : " + sensorInfo.getData(0,i) + "\nTHETA : " + sensorInfo.getData(1,i) + "\nPSI : " + sensorInfo.getData(2,i));
                     }else{
 //                        Log.d(TAG, " 가속도 값이 없음");
                         acctext.setText("not value");
                     }
                     try {
-                        mServiceMessenger.send(Message.obtain(null, SensorService.MSG_SET_VALUE));
+                        Message msg2 = Message.obtain(null, SensorService.MSG_SET_VALUE);
+                        msg2.obj = gps;
+                        mServiceMessenger.send(msg2);
+//                        mServiceMessenger.send(Message.obtain(null, SensorService.MSG_SET_VALUE));
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -155,6 +163,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    GpsInfo gps;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -175,6 +185,8 @@ public class MainActivity extends AppCompatActivity {
         m_gps = new GpsInfo(MainActivity.this);
         m_btn_gpsinfo = (Button)findViewById(R.id.btn_gpsinfo);
         m_txtv_gpsinfo = (TextView)findViewById(R.id.gpsinfo);
+
+        gps = new GpsInfo(MainActivity.this);
 
         String gpsinfo = "Latitude : \nLongitude : ";
         m_txtv_gpsinfo.setText(gpsinfo);

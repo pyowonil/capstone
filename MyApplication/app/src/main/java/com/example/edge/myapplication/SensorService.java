@@ -37,7 +37,7 @@ public class SensorService extends Service implements SensorEventListener{
     float[] acc;
     float[] gyro;
     SensorInfo sensorInfo;
-    private double dt = 1.0/100.0;
+    private double dt = 1.0/1000.0;
     private double processNoiseStdev = 3;
     private double measurementNoiseStdev = 5;
     double m = 0;
@@ -139,12 +139,15 @@ public class SensorService extends Service implements SensorEventListener{
                     acc[0] = event.values[0];
                     acc[1] = event.values[1];
                     acc[2] = event.values[2];
-
+                    etime = System.currentTimeMillis();
+                    sensorInfo.setTime(etime-stime);
+                    stime = etime;
+//                    double dt = sensorInfo.getTime();
                     // EulerAngles test ------------------------------
                     m_euler_angles.setF(event.values[0], event.values[1], event.values[2]);
                     //m_euler_kalman.setAccel(event.values[0], event.values[1], event.values[2]);
                     // ------------------------------ EulerAngles test
-
+//                    sensorInfo.setAccSensor(m_euler_angles.getFn(event.values));
                     // 중력가속도 제거
                     gx = alpha*gx + (1-alpha)*acc[0];
                     gy = alpha*gy + (1-alpha)*acc[1];
@@ -155,25 +158,29 @@ public class SensorService extends Service implements SensorEventListener{
 
                     // EulerAngles test ------------------------------
                     acc = m_euler_angles.getFn(acc);
-                    //acc[0] = (float)(m_euler_angles.getPhi() * 180/31.41592);
-                    //acc[1] = (float)(m_euler_angles.getTheta() * 180/31.41592);
-                    //acc[2] = (float)(m_euler_angles.getPsi() * 180/31.41592);
+                    acc[0] = (float)(m_euler_angles.getPhi() * 180/31.41592);
+                    acc[1] = (float)(m_euler_angles.getTheta() * 180/31.41592);
+                    acc[2] = (float)(m_euler_angles.getPsi() * 180/31.41592);
                     //acc[0] = (float)(m_euler_kalman.getPhi() * 36/31.41592);
                     //acc[1] = (float)(m_euler_kalman.getTheta() * 36/31.41592);
                     //acc[2] = (float)(m_euler_kalman.getPsi() * 36/31.41592);
                     // ------------------------------ EulerAngles test
 
                     // HSR 적용
-                    acc = filter.HSR(acc);
-                    etime = System.currentTimeMillis();
-                    sensorInfo.setTime(etime-stime);
-                    stime = etime;
+//                    acc = filter.HSR(acc);
 
-                    sensorInfo.setAccSensor(acc);
+
+//                    sensorInfo.setAccSensor(acc);
 
                     // ------------------ Kalman Filter 적용 부 ------------------
                     // 보정 안한
 //                    ax = (double) event.values[0] * processNoiseStdev;
+//                    acc = m_euler_angles.getFn(acc);
+//                    sensorInfo.setData(acc);
+//                    sensorInfo.setAccSensor(acc);
+//                    acc = m_euler_angles.getFn(acc);
+
+                    sensorInfo.setAccSensor(acc);
 //                    ax = (double) acc[0] * processNoiseStdev;
 //                    vx = ax * dt;
 //                    tx = dt * vx + 0.5 * pow(dt, 2) * ax;
@@ -183,7 +190,9 @@ public class SensorService extends Service implements SensorEventListener{
 //                    KF.update(dt);
 //                    KF.predict();
 //                    KF.correct(new Matrix(new double[][]{{m}}));
-//                    sensorInfo.setAccSensor((float) KF.getX().get(0, 0), (float) KF.getX().get(1, 0), (float) KF.getX().get(2, 0) );
+//                    float[] f = new float[3];
+//                    f[0] = (float)KF.getX().get(0,0); f[1] = (float)KF.getX().get(1,0); f[2] = (float)KF.getX().get(2,0);
+//                    sensorInfo.setAccSensor(f);
                     // ----------------- Kalman Filter 적용 부 -------------------
 
 //                    sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
@@ -200,6 +209,7 @@ public class SensorService extends Service implements SensorEventListener{
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     // EulerAngles test ------------------------------
                     m_euler_angles.setH(event.values[0], event.values[1], event.values[2]);
+//                    sensorInfo.setData(m_euler_angles.getFn());
                     //m_euler_kalman.setMagnetic(event.values[0], event.values[1], event.values[2]);
                     // ------------------------------ EulerAngles test
                     break;

@@ -137,7 +137,7 @@ public class EulerAngles {
     public Matrix getbCn() {
         return m_bCn;
     }
-    public float[] getFn(float[] Fb) {
+    public float[] getFn(float[] Fb){
         m_b_f.set(0,0,Fb[0]); m_b_f.set(1,0,Fb[1]); m_b_f.set(2,0,Fb[2]);
         m_b_f = m_bCn.times(m_b_f);
         Fb[0] = (float) m_b_f.get(0,0); Fb[1] = (float) m_b_f.get(1,0); Fb[2] = (float) m_b_f.get(2,0);

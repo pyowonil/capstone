@@ -57,13 +57,25 @@ public class SensorInfo {
         return time*10e-4;
     }
 
+    private double meter = 0;
+
+    public double getMeter(){
+        return meter;
+    }
+
     public void setAccSensor(float[] a){
         this.acc[0][t] = a[0];
         this.acc[1][t] = a[1];
         this.acc[2][t] = a[2];
 
-//        svm = (float)sqrt(pow(a[0],2) + pow(a[1],2) + pow(a[2],2))*20;
 
+//        meter += a[0];
+//        double dt = getTime();
+//
+//        meter += 0.5*a[0]*dt*dt;
+
+        svm = (float)sqrt(pow(a[0],2) + pow(a[1],2) + pow(a[2],2))*20;
+        movingSVM(svm);
         t++;
         if(t >= size) t = 0;
     }
@@ -103,9 +115,6 @@ public class SensorInfo {
         this.gyro[0] = gyro[0];
         this.gyro[1] = gyro[1];
         this.gyro[2] = gyro[2];
-
-        t2++;
-        if(t2 >= size) t2 = 0;
     }
 
     public float getGyro(int idx){
@@ -116,6 +125,21 @@ public class SensorInfo {
         this.data[0][idx] = data[0];
         this.data[1][idx] = data[1];
         this.data[2][idx] = data[2];
+
+//        double dt = getTime();
+//
+//        meter += 0.5*data[0]*dt*dt;
+        t2++;
+        if(t2 >= size) t2 = 0;
+    }
+
+    public void setData(float[] data){
+        this.data[0][t2] = data[0];
+        this.data[1][t2] = data[1];
+        this.data[2][t2] = data[2];
+
+        t2++;
+        if(t2 >= size) t2 = 0;
     }
 
     public float getData(int axis, int idx){

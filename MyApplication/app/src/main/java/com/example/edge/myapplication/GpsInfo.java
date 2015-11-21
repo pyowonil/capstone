@@ -5,12 +5,14 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.Log;
 
 /**
  * Created by edge on 2015-11-02.
@@ -46,6 +48,10 @@ public class GpsInfo extends Service implements LocationListener {
         getLocation();
     }
 
+    Criteria criteria = new Criteria();
+    LocationListener locationListener;
+
+
     public Location getLocation() {
         try {
             locationManager = (LocationManager) mContext
@@ -59,37 +65,64 @@ public class GpsInfo extends Service implements LocationListener {
             isNetworkEnabled = locationManager
                     .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
+
+
+
             if (!isGPSEnabled && !isNetworkEnabled) {
                 // GPS 와 네트워크사용이 가능하지 않을때 소스 구현
             } else {
                 this.isGetLocation = true;
                 // 네트워크 정보로 부터 위치값 가져오기
                 if (isNetworkEnabled) {
-                    locationManager.requestLocationUpdates(
-                            LocationManager.NETWORK_PROVIDER,
-                            MIN_TIME_BW_UPDATES,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+
+                    criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+                    criteria.setSpeedRequired(true);
+                    criteria.setAltitudeRequired(true);
+                    criteria.setBearingRequired(true);
+                    criteria.setCostAllowed(true);
+                    criteria.setPowerRequirement(Criteria.POWER_LOW);
+
+//                    locationManager.requestLocationUpdates(
+//                            LocationManager.NETWORK_PROVIDER,
+//                            MIN_TIME_BW_UPDATES,
+//                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+
+                    locationManager.requestLocationUpdates(locationManager.getBestProvider(criteria,true),1000,0,this);
 
                     if (locationManager != null) {
                         location = locationManager
-                                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                                .getLastKnownLocation(locationManager.getBestProvider(criteria,true));
+//                        location = locationManager
+//                                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                         if (location != null) {
                             // 위도 경도 저장
-                            lat = location.getLatitude();
-                            lon = location.getLongitude();
+//                            lat = location.getLatitude();
+//                            lon = location.getLongitude();
+                            onLocationChanged(location);
                         }
                     }
                 }
 
                 if (isGPSEnabled) {
                     if (location == null) {
-                        locationManager.requestLocationUpdates(
-                                LocationManager.GPS_PROVIDER,
-                                MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                        criteria.setSpeedRequired(true);
+                        criteria.setAltitudeRequired(true);
+                        criteria.setBearingRequired(true);
+                        criteria.setCostAllowed(false);
+                        criteria.setPowerRequirement(Criteria.POWER_LOW);
+
+                        locationManager.requestLocationUpdates(locationManager.getBestProvider(criteria,true),1000,0,this);
+
+//                        locationManager.requestLocationUpdates(
+//                                LocationManager.GPS_PROVIDER,
+//                                MIN_TIME_BW_UPDATES,
+//                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
                         if (locationManager != null) {
                             location = locationManager
-                                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                                    .getLastKnownLocation(locationManager.getBestProvider(criteria,true));
+//                            location = locationManager
+//                                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
                             if (location != null) {
                                 lat = location.getLatitude();
                                 lon = location.getLongitude();
@@ -134,6 +167,18 @@ public class GpsInfo extends Service implements LocationListener {
         return lon;
     }
 
+    public double getAltitude(){
+        return location.getAltitude();
+    }
+
+    public double getSpeed(){
+        return location.getSpeed();
+    }
+
+    public double getBearing(){
+        return location.getBearing();
+    }
+
     /**
      * GPS 나 wife 정보가 켜져있는지 확인합니다.
      * */
@@ -175,23 +220,66 @@ public class GpsInfo extends Service implements LocationListener {
         return null;
     }
 
+    public float bearing;
+    public long time;
+    public float altitude;
+    public float speed;
+    Location before = null;
+    public float distance;
+
     public void onLocationChanged(Location location) {
         // TODO Auto-generated method stub
+        Log.d("[위치] ", "갱신1!");
+        try{
+            if(before == null){
+                before = location;
+            }
+            location = locationManager
+                    .getLastKnownLocation(locationManager.getBestProvider(criteria,true));
 
+            bearing = location.bearingTo(location);
+
+            distance = location.distanceTo(location);
+            lat = location.getLatitude();
+            lon = location.getLongitude();
+//            bearing = location.getBearing();
+            time = location.getTime();
+
+        }catch(SecurityException e){
+
+        }
     }
 
     public void onStatusChanged(String provider, int status, Bundle extras) {
         // TODO Auto-generated method stub
+        Log.d("[위치] ", "갱신2!");
+        try{
+            location = locationManager
+                    .getLastKnownLocation(locationManager.getBestProvider(criteria,true));
+        }catch(SecurityException e){
 
+        }
     }
 
     public void onProviderEnabled(String provider) {
         // TODO Auto-generated method stub
+        Log.d("[위치] ", "갱신3!");
+        try{
+            location = locationManager
+                    .getLastKnownLocation(locationManager.getBestProvider(criteria,true));
+        }catch(SecurityException e){
 
+        }
     }
 
     public void onProviderDisabled(String provider) {
         // TODO Auto-generated method stub
+        Log.d("[위치] ", "갱신4!");
+        try{
+            location = locationManager
+                    .getLastKnownLocation(locationManager.getBestProvider(criteria,true));
+        }catch(SecurityException e){
 
+        }
     }
 }
