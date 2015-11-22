@@ -200,7 +200,59 @@ public class SensorInfo {
         tm_x += 200000;
         tm_y += 500000;
 
+        if(px == 0){
+            px = tm_x;
+        }
+        if(py == 0){
+            py = tm_y;
+        }
+
+        distance = Math.sqrt(Math.pow((tm_x-px),2) + Math.pow((tm_y-py),2));
+        XDistance = tm_x-px;
+        YDistance = tm_y-py;
+        px = tm_x;
+        py = tm_y;
+        dx[t2] = (float)XDistance;
+        dy[t2] = (float)YDistance;
+        t2++;
+        if(t2 >= 300) t2 = 0;
     }
+
+    public float getDx(int i){
+        return dx[i];
+    }
+
+    public float getDy(int i){
+        return dy[i];
+    }
+
+    private float[] dx = new float[300];
+    private float[] dy = new float[300];
+
+    public float getXDistance(){
+        return (float)XDistance;
+    }
+    public float getYDistance(){
+        return (float)YDistance;
+    }
+
+    public void setXDistance(float XDistance){
+        this.XDistance = XDistance;
+    }
+
+    public void setYDistance(float YDistance){
+        this.YDistance = YDistance;
+    }
+
+    public double getDistance(){
+        return distance;
+    }
+
+    private double XDistance = 0;
+    private double YDistance = 0;
+    private double distance = 0;
+    private double px = 0;
+    private double py = 0;
 
     public double getTm_x(){
         return tm_x;
@@ -242,8 +294,6 @@ public class SensorInfo {
         this.altitude = altitude;
         this.speed = speed;
         this.bearing = bearing;
-
-        Log.d("[센서] ","스피드 : " + latitude);
     }
 
     private double PI = 3.14159265358979323846;

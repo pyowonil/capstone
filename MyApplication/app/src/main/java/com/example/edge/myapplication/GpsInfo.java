@@ -212,31 +212,12 @@ public class GpsInfo extends Service implements LocationListener {
         return null;
     }
 
-    public float bearing;
-    public long time;
-    public float altitude;
-    public float speed;
-    Location before = null;
-    public float distance;
-
     public void onLocationChanged(Location location) {
         // TODO Auto-generated method stub
         Log.d("[위치] ", "갱신1!");
         try{
-            if(before == null){
-                before = location;
-            }
             location = locationManager
                     .getLastKnownLocation(locationManager.getBestProvider(criteria,true));
-
-            bearing = location.bearingTo(location);
-
-            distance = location.distanceTo(location);
-            lat = location.getLatitude();
-            lon = location.getLongitude();
-//            bearing = location.getBearing();
-            time = location.getTime();
-
         }catch(SecurityException e){
 
         }

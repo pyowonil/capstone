@@ -64,7 +64,8 @@ public class MainActivity extends AppCompatActivity {
                         int i = sensorInfo.getT2();
                         if(i == 0) i = 299;
 //                        acctext.setText("x : " + sensorInfo.getData(0,i) + "\ny : " + sensorInfo.getData(1,i) + "\nz : " + sensorInfo.getData(2,i));
-                        acctext.setText("x : " + sensorInfo.getAccSensor(0,i) + "\ny : " + sensorInfo.getAccSensor(1,i) + "\nz : " + sensorInfo.getAccSensor(2,i));
+//                        acctext.setText("x : " + sensorInfo.getAccSensor(0,i) + "\ny : " + sensorInfo.getAccSensor(1,i) + "\nz : " + sensorInfo.getAccSensor(2,i));
+                        acctext.setText("DX : " + sensorInfo.getDx(i) + "\nDY : " + sensorInfo.getDx(i));
 //                        mCallbackText.setText("TIME : " + m_gps.time + "\nDISTANCE : " + sensorInfo.getMeter() + "\nSPEED : " + m_gps.speed
 //                                + "\nLAT : " + m_gps.getLatitude()+ "\nLON : " + m_gps.getLongitude() + "\nALT : " + m_gps.getAltitude()+ "\nBER : " + m_gps.bearing);
                         mCallbackText.setText("TM_X : " + sensorInfo.getTm_x() + "\nTM_Y : " + sensorInfo.getTm_y() + "\nSPEED : " + sensorInfo.getSpeed()
@@ -295,6 +296,29 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        private void drawPos(Canvas canvas) {
+
+            paint.setColor(Color.GRAY);
+            paint.setStrokeWidth(5);
+            canvas.drawLine(0,py, x, py, paint);
+            canvas.drawLine(px, 0, px, y, paint);
+
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(5);
+
+            for(int i=0; i<maxSize; i++) {
+                int m = (t2 - i);
+                if (m < 0) m += maxSize;
+                int nm = m + 1;
+                if (nm >= maxSize) nm -= maxSize;
+                canvas.drawLine(px+sensorInfo.getDx(m),py+sensorInfo.getDy(m),px+sensorInfo.getDx(nm), py +sensorInfo.getDy(nm),paint);
+            }
+
+        }
+
+        private float px = 0;
+        private float py = 0;
+
         @Override
         protected void onDraw(Canvas canvas){
             synchronized (this) {
@@ -307,15 +331,17 @@ public class MainActivity extends AppCompatActivity {
                         y = canvas.getHeight();
                         y2 = y / 6;
                         intvls = x / maxSize;
+                        px = x/2; py = y/2;
                     }
                 }
                 if (sensorInfo != null) {
-                    if (maxSize == 0) {
-                        maxSize = sensorInfo.getMaxSize();
-                    }
-                    t = sensorInfo.getT();
+//                    if (maxSize == 0) {
+//                        maxSize = sensorInfo.getMaxSize();
+//                    }
+//                    t = sensorInfo.getT();
                     t2 = sensorInfo.getT2();
-                    drawAcc(canvas);
+//                    drawAcc(canvas);
+                    drawPos(canvas);
                 } else {       }
                 invalidate();
             }
