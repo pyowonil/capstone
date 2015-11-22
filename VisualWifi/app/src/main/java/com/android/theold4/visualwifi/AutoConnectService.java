@@ -18,6 +18,7 @@ public class AutoConnectService extends Service implements Runnable {
     public void onCreate(){
         super.onCreate();
 
+        Log.i(TAG,"Autostart");
         // 쓰레드 객체 생성 후 시작
         myThread = new Thread(this);
         myThread.start();
@@ -28,6 +29,7 @@ public class AutoConnectService extends Service implements Runnable {
     }
 
     public void run(){
+        Log.i(TAG,"Autorun()");
         // 실행부 ( 예시 로그에 5초마다 카운트 )
         // 자동연결 하는 코드
         while(true){

@@ -62,8 +62,7 @@
             android:layout_weight="0.33"
             android:clickable="true"
             android:checked="false"
-            android:enabled="true"
-            style="@style/Base.TextAppearance.AppCompat.Widget.Switch" />
+            android:enabled="true" />
 
         <Button
             style="?android:attr/buttonStyleSmall"

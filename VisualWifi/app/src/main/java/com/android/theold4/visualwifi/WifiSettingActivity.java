@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -24,8 +25,8 @@ public class WifiSettingActivity extends AppCompatActivity implements View.OnCli
         TextView textView2 = (TextView)findViewById(R.id.textView2);
         Button buttonUpload = (Button)findViewById(R.id.button_upload);
         Button buttonDownload = (Button)findViewById(R.id.button_download);
-        final Switch switchAuto = (Switch)findViewById(R.id.switch_auto);
-        final Button buttonWifiList = (Button)findViewById(R.id.button_wifi_list);
+        Switch switchAuto = (Switch)findViewById(R.id.switch_auto);
+        Button buttonWifiList = (Button)findViewById(R.id.button_wifi_list);
         Button buttonExitSetting = (Button)findViewById(R.id.button_exit_setting);
 
         buttonDownload.setOnClickListener(new View.OnClickListener(){
@@ -51,11 +52,13 @@ public class WifiSettingActivity extends AppCompatActivity implements View.OnCli
         switchAuto.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(CompoundButton buttonView,boolean isChecked){
+                Log.i("Switch1","act");
                 Context context;
                 Intent intentService = new Intent(".AutoConnectService");
                 if(isChecked){
+                    Log.i("Switch1","act2-1");
                     // Wifi 자동연결 상태일때
-                    buttonWifiList.setVisibility(View.INVISIBLE);
+                   // buttonWifiList.setVisibility(View.INVISIBLE);
                     // Wifi 자동 연결 서비스 시작
                     startService(intentService);
 
@@ -63,9 +66,10 @@ public class WifiSettingActivity extends AppCompatActivity implements View.OnCli
                 else{
                     // Wifi 수동연결 상태일때
                     // Wifi 선택 버튼 보여짐
-                    buttonWifiList.setVisibility(View.VISIBLE);
+                    Log.i("Switch1","act2-2");
+                   // buttonWifiList.setVisibility(View.VISIBLE);
                     // Wifi 자동 연결 서비스 종료
-
+                    Log.i("Switch1","act3");
                 }
 
             }
