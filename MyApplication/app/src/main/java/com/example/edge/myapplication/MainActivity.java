@@ -67,13 +67,14 @@ public class MainActivity extends AppCompatActivity {
                         acctext.setText("x : " + sensorInfo.getAccSensor(0,i) + "\ny : " + sensorInfo.getAccSensor(1,i) + "\nz : " + sensorInfo.getAccSensor(2,i));
 //                        mCallbackText.setText("TIME : " + m_gps.time + "\nDISTANCE : " + sensorInfo.getMeter() + "\nSPEED : " + m_gps.speed
 //                                + "\nLAT : " + m_gps.getLatitude()+ "\nLON : " + m_gps.getLongitude() + "\nALT : " + m_gps.getAltitude()+ "\nBER : " + m_gps.bearing);
-//                        mCallbackText.setText("TM_X : " + sensorInfo.getTm_x() + "\nTM_Y : " + sensorInfo.getTm_y() + "\nSPEED : " + sensorInfo.getSpeed()
-//                                + "\nLAT : " + sensorInfo.getLatitude()+ "\nLON : " + sensorInfo.getLongitude() + "\nALT : " + sensorInfo.getAltitude()+ "\nBER : " + sensorInfo.getBearing());
+                        mCallbackText.setText("TM_X : " + sensorInfo.getTm_x() + "\nTM_Y : " + sensorInfo.getTm_y() + "\nSPEED : " + sensorInfo.getSpeed()
+                                + "\nLAT : " + sensorInfo.getLatitude()+ "\nLON : " + sensorInfo.getLongitude() + "\nALT : " + sensorInfo.getAltitude()+ "\nBER : " + sensorInfo.getBearing());
 //                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getMeter() + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1,i)
 //                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2,i) + "\n시간(sec) : " + sensorInfo.getTime());
-                        mCallbackText.setText("Pn1 : " + sensorInfo.Pn1 + "\tPn2 : " + sensorInfo.Pn2
-                                + "\nMn1 : " + sensorInfo.Mn1 + "\tMn2 : " + sensorInfo.Mn2 + "\nMaxThres : " + sensorInfo.maxThreshold + "\tMinThres : " + sensorInfo.minThreshold +
-                                "\nSTEP : " + sensorInfo.getStep());
+//                        mCallbackText.setText("Pn1 : " + sensorInfo.Pn1 + "\tPn2 : " + sensorInfo.Pn2
+//                                + "\nMn1 : " + sensorInfo.Mn1 + "\tMn2 : " + sensorInfo.Mn2 + "\nMaxThres : " + sensorInfo.maxThreshold + "\tMinThres : " + sensorInfo.minThreshold +
+//                                "\nSTEP : " + sensorInfo.getStep());
+//                        mCallbackText.setText("Threshold : " + sensorInfo.getSVM() + "\nThreshold : " + sensorInfo.getThres() + "\nSTEP : " + sensorInfo.getStep());
 //                        i = sensorInfo.getT2();
 //                        if(i == 0) i = 299;
 //                        mCallbackText.setText("PHI : " + sensorInfo.getData(0,i) + "\nTHETA : " + sensorInfo.getData(1,i) + "\nPSI : " + sensorInfo.getData(2,i));

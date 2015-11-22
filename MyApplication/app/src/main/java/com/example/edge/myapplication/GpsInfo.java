@@ -24,10 +24,8 @@ public class GpsInfo extends Service implements LocationListener {
 
     // 현재 GPS 사용유무
     boolean isGPSEnabled = false;
-
     // 네트워크 사용유무
     boolean isNetworkEnabled = false;
-
     // GPS 상태값
     boolean isGetLocation = false;
 
@@ -78,9 +76,6 @@ public class GpsInfo extends Service implements LocationListener {
                     criteria.setAccuracy(Criteria.ACCURACY_COARSE);
                     criteria.setSpeedRequired(true);
                     criteria.setAltitudeRequired(true);
-                    criteria.setBearingRequired(true);
-                    criteria.setCostAllowed(true);
-                    criteria.setPowerRequirement(Criteria.POWER_LOW);
 
 //                    locationManager.requestLocationUpdates(
 //                            LocationManager.NETWORK_PROVIDER,
@@ -108,9 +103,6 @@ public class GpsInfo extends Service implements LocationListener {
                         criteria.setAccuracy(Criteria.ACCURACY_FINE);
                         criteria.setSpeedRequired(true);
                         criteria.setAltitudeRequired(true);
-                        criteria.setBearingRequired(true);
-                        criteria.setCostAllowed(false);
-                        criteria.setPowerRequirement(Criteria.POWER_LOW);
 
                         locationManager.requestLocationUpdates(locationManager.getBestProvider(criteria,true),1000,0,this);
 

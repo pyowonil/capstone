@@ -52,9 +52,9 @@ public class KalmanFilter {
         setU(new Matrix(new double[][]{{0}}));
         //process noise covariance matrix
         setQ(new Matrix(new double[][]{
-                {pow(dt, 5) / 4, pow(dt, 4) / 2, pow(dt, 3) / 2},
-                {pow(dt, 4) / 2, pow(dt, 3) / 1, pow(dt, 2) / 1},
-                {pow(dt, 3) / 1, pow(dt, 2) / 1, pow(dt, 1) / 1}}).times(processNoisePSD));
+                {pow(dt, 5) / 20, pow(dt, 4) / 8, pow(dt, 3) / 6},
+                {pow(dt, 4) / 8, pow(dt, 3) / 3, pow(dt, 2) / 2},
+                {pow(dt, 3) / 6, pow(dt, 2) / 2, pow(dt, 1) / 1}}).times(processNoisePSD));
 
         //measurement matrix
         setH(new Matrix(new double[][]{
