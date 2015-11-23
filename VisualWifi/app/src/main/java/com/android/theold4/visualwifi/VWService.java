@@ -26,8 +26,14 @@ public class VWService extends Service implements Runnable {
     DBManager helper;
     SQLiteDatabase db;
 
+    GPSInfo gps;
+    private double lat = 38;
+    private double lon = 127;
+
     public void onCreate(){
         super.onCreate();
+
+        gps = new GPSInfo(this);
 
         // 쓰레드 객체 생성 후 시작
         myThread = new Thread(this);
@@ -63,6 +69,9 @@ public class VWService extends Service implements Runnable {
 
                     String ssid = info.getSSID();
                     int rssi = info.getRssi();
+
+                    lat = gps.getLat();
+                    lon = gps.getLon();
 
                     db.execSQL("INSERT INTO contact VALUES(null, '" + ssid + "','" + rssi + "');");
 
