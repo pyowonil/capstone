@@ -42,32 +42,19 @@ import java.util.List;
 import java.util.Locale;
 
 /*
- * 목적 : 메인 액티비티 *
- * 내용 : 구글맵과 사이드메뉴
+ * 목적 : 필터링 액티비티 *
  *
- * 구성 :
- *      액티비티           - MapsActivity.java , WifiSettingActivity.java
- *      서비스             - VWService.java , AutoConnectService.java
- *      브로드캐스트리시버 - NetWatcher.java
- *      클래스             - DBManager.java(미정)
- *
- * 기능 :
- *      DB관련 함수 콜    - VWService.java , WifiSettingActivity.java
- *      서버관련 통신     - WifiSettingActivity.java
- *      Wifi상태 검사     - NetWatcher.java
- *      자동연결          - AutoConnectService.java
  *
  */
 
-//public class MapsActivity extends AppCompatActivity implements LocationListener{
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
+public class FilterActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
     // 구글맵 관련 선언
     private GoogleMap map;
     private GoogleApiClient mGoogleApiClient;
     static final LatLng SEOUL = new LatLng(37.56, 126.97);
 
     // 사이드 메뉴 관련 선언
-    private String[] navItems = {"Wifi설정", "필터링", "에디터"}; // wifi설정에 동기화,업로드, 자동수동 설정
+    private String[] navItems = {"기능1", "기능2", "돌아가기"}; // 필터링 기능 + 메인으로 돌아가기
     private ListView lvNavList;
     private FrameLayout flContainer;
 
@@ -75,9 +62,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DrawerLayout dlDrawer;
     private ActionBarDrawerToggle dtToggle;
 
-    // Wifi 설정 메뉴 액티비티 화면 관련
-    public static final int REQUEST_CODE_WiFiSetting = 1001;
-    public static final int REQUEST_CODE_Filter = 1002;
 
 
     @Override
@@ -165,22 +149,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onItemClick(AdapterView<?> adapter, View view, int position, long id){
             switch(position){
-                case 0:
-                    Intent intentSetting = new Intent(getApplicationContext(), WifiSettingActivity.class);
-                    startActivityForResult(intentSetting, REQUEST_CODE_WiFiSetting );
-                    break;
-                case 1:
-                    Intent intentFilter = new Intent(getApplicationContext(), FilterActivity.class);
-                    startActivityForResult(intentFilter, REQUEST_CODE_Filter);
-                    break;
-                case 2:
+                case 0:   // 기능 1
 
+                    break;
+                case 1:  // 기능 2
+
+                    break;
+                case 2:  // 돌아가기
+                    finish();
                     break;
             }
             dlDrawer.closeDrawer(lvNavList); // 선택 후 사이드 메뉴 닫기
         }
     }
-    // 토글 관련
+    // 사이드 메뉴 토글 관련
     protected  void onPostCreate(Bundle savedInstanceState){
         super.onPostCreate(savedInstanceState);
         dtToggle.syncState();
@@ -199,26 +181,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     // ----------------------- 사이드 메뉴 관련 End --------------------------
 
-    // ----------------------- 액티비티 관련 Start ---------------------------
     @Override
     public void onClick(View v) {
 
     }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent intent){
-        super.onActivityResult(requestCode, resultCode, intent);
-
-        if( requestCode == REQUEST_CODE_WiFiSetting){
-            Toast toast = Toast.makeText(getBaseContext(), "onActivityResult 메소드가 호출됨. 코드 : "+requestCode+
-                    ", 결과 코드 : " + resultCode, Toast.LENGTH_LONG);
-            toast.show();
-
-            if(resultCode == RESULT_OK){
-                String name = intent.getExtras().getString("setting");
-                toast = Toast.makeText(getBaseContext(), "응답 : " + name, Toast.LENGTH_LONG);
-                toast.show();
-            }
-        }
-    }
-    // ----------------------- 액티비티 관련 End -----------------------------
 }

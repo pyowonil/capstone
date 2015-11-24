@@ -52,6 +52,9 @@
         </intent-filter>
     </activity>
 
+    <activity android:name=".FilterActivity">
+    </activity>
+
     <receiver android:name="com.android.theold4.visualwifi.NetWatcher">
         <intent-filter>
             <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
