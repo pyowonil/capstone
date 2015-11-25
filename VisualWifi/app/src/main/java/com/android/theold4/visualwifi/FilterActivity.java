@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -39,6 +41,7 @@ import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
@@ -68,8 +71,13 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
     private DrawerLayout dlDrawer;
     private ActionBarDrawerToggle dtToggle;
 
-    int num = 100;
-    List<CircleOptions> circleList = new ArrayList<CircleOptions>();
+    // Wi-Fi AP 위치 및 범위 표기
+    int num = 100; // AP 숫자 (임의 갯수)
+//    List<CircleOptions> circleList = new ArrayList<CircleOptions>(); // 범위 그림 List
+    List<LatLng> latLngList = new ArrayList<LatLng>(); // 위치 List
+    Bitmap icon; // Wi-Fi 이미지
+    List<Circle> circleList = new ArrayList<>();
+    List<Marker> markerList = new ArrayList<>();
 
 
     @Override
@@ -93,6 +101,9 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
         map.setMyLocationEnabled(true);
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(SEOUL, 13));
 
+        // 와이파이 이미지 로드
+        icon = BitmapFactory.decodeResource(this.getResources(), R.drawable.logo_wifi3);
+
         GoogleMap.OnMyLocationChangeListener onMyLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
             @Override
             public void onMyLocationChange(Location location) {
@@ -112,9 +123,38 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
                 return true;
             }
         };
+
+        GoogleMap.OnMarkerClickListener onMarkerClickListener = new GoogleMap.OnMarkerClickListener(){
+
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if(!markerList.isEmpty()){
+                    Log.d("[리스너] ","들어옴");
+                    int cnt = 0;
+                    for(Marker marker1 : markerList){
+                        if(marker.getTitle().equals(marker1.getTitle())){
+                            Log.d("[리스너] ", "찾음");
+                            Circle circle = circleList.get(cnt);
+                            if(circle.isVisible()){
+                                circle.setVisible(false);
+                            }else{
+                                circle.setVisible(true);
+                            }
+                            break;
+                        }
+                        cnt++;
+                    }
+                }
+                return true;
+            }
+        };
+
+
 //        map.setIndoorEnabled(true);
+        // 해당하는 리스너 등록
         map.setOnMyLocationButtonClickListener(onMyLocationButtonClickListener);
-        map.setOnMyLocationChangeListener(onMyLocationChangeListener);
+//        map.setOnMyLocationChangeListener(onMyLocationChangeListener);
+        map.setOnMarkerClickListener(onMarkerClickListener);
     }
 
     private void drawMarker(Location location) {
@@ -125,6 +165,7 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
         double lng = location.getLongitude();
 
         LatLng currentPosition = new LatLng(lat, lng);
+//        icon = Bitmap.createScaledBitmap(icon, icon.getWidth()/10,icon.getHeight()/10, false);
 
         // currentPosition 위치로 카메라 중심을 옮기고
         // 화면줌 (2~21) 조정 클수록 확대
@@ -136,7 +177,8 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 .title("현재위치"));
 
-        // 37.472475, 126.792109
+
+        // 현재 위치 주변 랜덤 위치에 AP 위치 표기
         Random r = new Random();
 
         lat = (Math.floor(lat*1e2))*1e-2;
@@ -145,22 +187,23 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
             double l = r.nextInt(10000)*10e-7;
             double l2 = r.nextInt(10000)*10e-7;
             LatLng latLng = new LatLng(lat+l, lng+l2);
-//            LatLng latLng = new LatLng(37.47+l, 126.79+l2);
+            latLngList.add(latLng);
             CircleOptions circleOptions = new CircleOptions()
                     .center(latLng)
                     .radius(10)
                     .strokeWidth(1)
-                    .strokeColor(Color.rgb(0,50,200))
-                    .fillColor(Color.argb(50,0,50,170));
-            circleList.add(circleOptions);
+                    .strokeColor(Color.rgb(0, 50, 200))
+                    .fillColor(Color.argb(50, 0, 50, 170));
+            Circle circle = map.addCircle(circleOptions);
+            circleList.add(circle);
+
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .position(latLng)
+                    .icon(BitmapDescriptorFactory.fromBitmap(icon))
+                    .title("WIFI AP" + i+1);
+            Marker marker = map.addMarker(markerOptions);
+            markerList.add(marker);
         }
-
-        for(CircleOptions circle : circleList){
-            map.addCircle(circle);
-        }
-
-
-
     }
 
     @Override
