@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -36,6 +37,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -144,13 +146,21 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
             double l2 = r.nextInt(10000)*10e-7;
             LatLng latLng = new LatLng(lat+l, lng+l2);
 //            LatLng latLng = new LatLng(37.47+l, 126.79+l2);
-            CircleOptions circleOptions = new CircleOptions().center(latLng).radius(10);
+            CircleOptions circleOptions = new CircleOptions()
+                    .center(latLng)
+                    .radius(10)
+                    .strokeWidth(1)
+                    .strokeColor(Color.rgb(0,50,200))
+                    .fillColor(Color.argb(50,0,50,170));
             circleList.add(circleOptions);
         }
 
         for(CircleOptions circle : circleList){
             map.addCircle(circle);
         }
+
+
+
     }
 
     @Override
