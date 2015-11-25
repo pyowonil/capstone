@@ -34,12 +34,16 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 /*
  * 목적 : 필터링 액티비티 *
@@ -62,6 +66,8 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
     private DrawerLayout dlDrawer;
     private ActionBarDrawerToggle dtToggle;
 
+    int num = 100;
+    List<CircleOptions> circleList = new ArrayList<CircleOptions>();
 
 
     @Override
@@ -85,24 +91,66 @@ public class FilterActivity extends AppCompatActivity implements OnMapReadyCallb
         map.setMyLocationEnabled(true);
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(SEOUL, 13));
 
+        GoogleMap.OnMyLocationChangeListener onMyLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+                if(location != null){
+                    drawMarker(location);
+                }
+            }
+        };
 
+        GoogleMap.OnMyLocationButtonClickListener onMyLocationButtonClickListener = new GoogleMap.OnMyLocationButtonClickListener() {
+            @Override
+            public boolean onMyLocationButtonClick() {
+                Location location = map.getMyLocation();
+                if(location != null){
+                    drawMarker(location);
+                }
+                return true;
+            }
+        };
+//        map.setIndoorEnabled(true);
+        map.setOnMyLocationButtonClickListener(onMyLocationButtonClickListener);
+        map.setOnMyLocationChangeListener(onMyLocationChangeListener);
     }
 
     private void drawMarker(Location location) {
         // 기존 마커 지우기
         map.clear();
-        LatLng currentPosition = new LatLng(location.getLatitude(), location.getLongitude());
+
+        double lat = location.getLatitude();
+        double lng = location.getLongitude();
+
+        LatLng currentPosition = new LatLng(lat, lng);
 
         // currentPosition 위치로 카메라 중심을 옮기고
         // 화면줌 (2~21) 조정 클수록 확대
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 17));
-        map.animateCamera(CameraUpdateFactory.zoomTo(17), 2000, null);
         // 마커 추가
         map.addMarker(new MarkerOptions()
                 .position(currentPosition)
-                .snippet("Lat:" + location.getLatitude() + " Lng:" + location.getLongitude())
+                .snippet("Lat:" + lat + " Lng:" + lng)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 .title("현재위치"));
+
+        // 37.472475, 126.792109
+        Random r = new Random();
+
+        lat = (Math.floor(lat*1e2))*1e-2;
+        lng = (Math.floor(lng*1e2))*1e-2;
+        for(int i=0; i<num; i++){
+            double l = r.nextInt(10000)*10e-7;
+            double l2 = r.nextInt(10000)*10e-7;
+            LatLng latLng = new LatLng(lat+l, lng+l2);
+//            LatLng latLng = new LatLng(37.47+l, 126.79+l2);
+            CircleOptions circleOptions = new CircleOptions().center(latLng).radius(10);
+            circleList.add(circleOptions);
+        }
+
+        for(CircleOptions circle : circleList){
+            map.addCircle(circle);
+        }
     }
 
     @Override

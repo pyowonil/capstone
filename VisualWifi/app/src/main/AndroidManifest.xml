@@ -33,7 +33,7 @@
     -->
     <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyDGmG7Y30F0JJtc4RxEm-GqhPMILyQoPQA" />
+        android:value="AIzaSyA-E_FKDOT2aFGKm3O72APW3dwxs6VEnPs" />
 
     <activity
         android:name=".MapsActivity"

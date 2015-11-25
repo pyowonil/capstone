@@ -13,6 +13,7 @@ import android.location.LocationManager;
 
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -34,12 +35,19 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
+import java.util.Random;
 
 /*
  * 목적 : 메인 액티비티 *
@@ -88,7 +96,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         InitGoogleMap(); // 구글맵 초기화
         InitSideMenu();  // 사이드메뉴 및 토글버튼 초기화
     }
-
     // *********************************************************************
     // ----------------------- 구글 맵 관련 start --------------------------
     private void InitGoogleMap() {
@@ -100,7 +107,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //현재 위치로 가는 버튼 표시
         map.setMyLocationEnabled(true);
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(SEOUL, 13));
-
 
     }
 
@@ -119,6 +125,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .snippet("Lat:" + location.getLatitude() + " Lng:" + location.getLongitude())
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 .title("현재위치"));
+
     }
 
     @Override
