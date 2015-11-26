@@ -34,6 +34,8 @@ public class AutoConnectService extends Service implements Runnable {
         // 자동연결 하는 코드
         while(true){
             try{
+                // TODO
+                // 자동연결 서비스 구현
                 Log.i(TAG, "자동연결 서비스 #" + count);
                 count++;
 
