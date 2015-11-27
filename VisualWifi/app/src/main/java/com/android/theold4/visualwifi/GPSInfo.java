@@ -46,12 +46,7 @@ public class GPSInfo extends Service implements LocationListener{
             // -------------- NETWORK PROVIDER ------------------------
             provider = LocationManager.NETWORK_PROVIDER;
 
-            if (provider == null) {
-                String str = "Not Found Provider : " + provider;
-                Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
-            } else {
-                String str = "Found Provider Name : " + provider;
-                Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
+            if (provider != null){
                 mLocMan.requestLocationUpdates(provider, 1000, 10, this);
             }
             // -------------- NETWORK PROVIDER ------------------------
@@ -63,12 +58,7 @@ public class GPSInfo extends Service implements LocationListener{
             criteria.setAltitudeRequired(true);
             provider2 = mLocMan.getBestProvider(criteria, true);
 
-            if(provider2 == null){
-                String str = "Not Found Provider : " + provider2;
-                Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
-            }else{
-                String str = "Found Provider Name : " + provider2;
-                Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
+            if(provider2 != null){
                 mLocMan.requestLocationUpdates(provider2, 1000, 10, this);
             }
             // ------------------ GPS PROVIDER ------------------------
@@ -78,8 +68,6 @@ public class GPSInfo extends Service implements LocationListener{
                 mLoc = mLocMan.getLastKnownLocation(provider);
                 lat = mLoc.getLatitude();
                 lon = mLoc.getLongitude();
-                String str = "GPS INFOMATION\nLAT : " + lat + "\nLON : " + lon;
-                Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
             }
         } catch (SecurityException e) {
 
@@ -142,13 +130,9 @@ public class GPSInfo extends Service implements LocationListener{
     @Override
     public void onLocationChanged(Location location) {
         if(isGpsReceived){
-            String str = "GPS INFOMATION\nLAT : " + location.getLatitude() + "\nLON : " + location.getLongitude();
-            Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
             isGpsReceived = true; // gps 위치정보가 수신되면 플래그를 set
             updateWithNewLocation(location, provider2);
         }else{
-            String str = "NETWORK INFORMATION\nLAT : " + location.getLatitude() + "\nLON : " + location.getLongitude();
-            Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
             updateWithNewLocation(location, provider);
         }
     }
