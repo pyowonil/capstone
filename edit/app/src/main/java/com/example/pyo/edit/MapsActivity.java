@@ -17,8 +17,12 @@
 package com.example.pyo.edit;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.location.Location;
 import android.os.Bundle;
@@ -26,8 +30,10 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,6 +51,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 public class MapsActivity extends AppCompatActivity
         implements
@@ -69,6 +76,10 @@ public class MapsActivity extends AppCompatActivity
     private boolean mLock=true;
 
     private List<DraggableCircle> mCircles = new ArrayList<DraggableCircle>(1);
+    private FrameLayout mDrawMap;
+    private boolean IS_MAP_MOVEABLE;
+    private Vector<Point> mDrawPoints;
+    private DrawCanvas mDrawCanvas;
 
     // 디버깅용 택스트
     private TextView mInfoTap;
@@ -80,7 +91,7 @@ public class MapsActivity extends AppCompatActivity
 
     // 원을 관리하는 클래스
     private class DraggableCircle {
-        private static final int WIDTH = 5; // ~50
+        private static final int WIDTH = 0; // ~50
         private static final int HUE = 0; // ~360
         private static final int ALPHA = 30; // ~255
         private final Marker centerMarker;
@@ -167,6 +178,76 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         mInfoTap = (TextView)findViewById(R.id.tap);
+
+        // REGISTER DRAW MAP TOUCH LISENTER
+        mDrawMap = (FrameLayout)findViewById(R.id.draw_map);
+        IS_MAP_MOVEABLE = false;
+        mDrawPoints = new Vector<Point>();
+        mDrawMap.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Point point = new Point(Math.round(event.getX()), Math.round(event.getY()));
+                if(IS_MAP_MOVEABLE) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            mDrawPoints.add(point);
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            mDrawPoints.add(point);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            mDrawPoints.clear();
+                            break;
+                    }
+                }
+
+                System.out.println("[!] drag event : " + point.toString());
+
+                return IS_MAP_MOVEABLE;
+            }
+        });
+        mDrawCanvas = new DrawCanvas(this);
+        mDrawMap.addView(mDrawCanvas);
+    }
+
+    class DrawCanvas extends View {
+        private Paint mPaint;
+        private Bitmap mBitmap;
+
+        public DrawCanvas(Context context) {
+            super(context);
+            mPaint = new Paint();
+            mPaint.setAntiAlias(true);
+            mPaint.setStrokeWidth(10);
+            mPaint.setColor(Color.RED);
+            mPaint.setStyle(Paint.Style.FILL);
+            mBitmap = Bitmap.createBitmap(200,200, Bitmap.Config.ARGB_8888);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            synchronized (this) {
+                super.onDraw(canvas);
+                //canvas.setBitmap(mBitmap);
+                if(mDrawPoints.isEmpty()) {
+                    invalidate();
+                } else {
+                    Point a = mDrawPoints.get(0);
+                    int size = mDrawPoints.size();
+                    for (int i = 1; i < size; i++) {
+                        Point b = mDrawPoints.get(i);
+                        canvas.drawLine(a.x, a.y, b.x, b.y, mPaint);
+                        a = b;
+                    }
+
+                    invalidate();
+                }
+            }
+        }
+
+        public void saveBitmap() {
+
+        }
     }
 
 
@@ -262,6 +343,7 @@ public class MapsActivity extends AppCompatActivity
     public void onClickDraw(View view) {
         mLock = false;
         mUiSettings.setAllGesturesEnabled(mLock);
+        IS_MAP_MOVEABLE = true;
         mCurrentMode = mMode.DRAW;
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(false);
@@ -270,12 +352,14 @@ public class MapsActivity extends AppCompatActivity
     public void onClickLoad(View view) {
         mLock = true;
         mUiSettings.setAllGesturesEnabled(mLock);
+        IS_MAP_MOVEABLE = false;
         mCurrentMode = mMode.LOAD;
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(true);
         }
     }
     public void onClickClear(View view) {
+        IS_MAP_MOVEABLE = false;
         for(DraggableCircle circle : mCircles) {
             circle.remove();
         }
@@ -285,6 +369,7 @@ public class MapsActivity extends AppCompatActivity
         mCurrentMode = mMode.DEFAULT;
     }
     public void onClickRun(View view) {
+        IS_MAP_MOVEABLE = false;
         mCurrentMode = mMode.RUN;
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(false);
@@ -293,6 +378,7 @@ public class MapsActivity extends AppCompatActivity
         // 실제 선정된 기기를 통한 연산 필요
     }
     public void onClickExit(View view) {
+        IS_MAP_MOVEABLE = false;
         mCurrentMode = mMode.EXIT;
         // TODO
         // Activity 전환 필요

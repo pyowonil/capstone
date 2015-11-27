@@ -22,7 +22,7 @@ import static java.lang.Math.sqrt;
 public class SensorInfo {
 
     private float acc[][];
-    private float accData[];
+    public float accData[];
     private float gyro[];
     private float data[][];
     private int t = 0;
@@ -71,13 +71,20 @@ public class SensorInfo {
         return meter;
     }
 
+
     public void setAccSensor(float[] a){
         this.acc[0][t] = a[0];
         this.acc[1][t] = a[1];
         this.acc[2][t] = a[2];
 
-        accData = a;
-//        meter += a[0];
+        float dt = (float)getTime();
+        accData[0] += (a[0])*dt*dt*100;
+        accData[1] += (a[1])*dt*dt*100;
+        accData[2] += (a[2])*dt*dt*100;
+        this.acc[0][t] = accData[0];
+        this.acc[1][t] = accData[1];
+        this.acc[2][t] = accData[2];
+//        meter += a[0]*dt*dt*0.5;
 //        double dt = getTime();
 //        meter += 0.5*a[2]*dt*dt;
 
@@ -160,62 +167,62 @@ public class SensorInfo {
         this.gyro[1] = gyro[1];
         this.gyro[2] = gyro[2];
 
-        pkf.predict(akf.get_X(), gyro, accData, getTime());
-        pkf.update(akf.get_X());
-        akf.predict(gyro, getTime());
-        akf.update(gyro, accData);
-        akf.GetRPY(rpy[0],rpy[1],rpy[2]);
-        a = pkf.get_a().getArray();
-        Matrix x = pkf.get_X();
-        v = x.getMatrix(0,2,0,0).getArray();
-        p = x.getMatrix(3,5,0,0).getArray();
-        Matrix _P = pkf.get_P();
-        Matrix _Q = pkf.get_P();
-        // For Debugging
-        for (int i=0; i<6; ++i) {
-            for (int j=0; j<6; ++j) {
-                P[i][j] = _P.get(i, j);
-            }
-        }
-        for (int i=0; i<3; ++i) {
-            for (int j=0; j<3; ++j) {
-                Q[i][j] = _Q.get(i, j);
-            }
-        }
-
-        // 우리나라 TM(Transverse Mercator) 좌표계 원점들의 경위도 값
-        // 중부 원점: 38, 127
-        // x-축 : 남북 방향, 북쪽이 +
-        // y-축 : 동서 방향, 동쪽이 +
-        Bessel2TM (altitude, longitude,latitude, 127, 38);
-        tm_y = -tm_y;
-
-        double yaw = -DEG2RAD*bearing;
-        double vel = speed*1000./(60.*60.);
-
-        akf.update(yaw, vel);
-        pkf.update(akf.get_X(), tm_x, tm_y, altitude);
-        pkf.update(akf.get_X(), vel, 0.01);
-
-        tm_x += 200000;
-        tm_y += 500000;
-
-        if(px == 0){
-            px = tm_x;
-        }
-        if(py == 0){
-            py = tm_y;
-        }
-
-        distance = Math.sqrt(Math.pow((tm_x-px),2) + Math.pow((tm_y-py),2));
-        XDistance = tm_x-px;
-        YDistance = tm_y-py;
-        px = tm_x;
-        py = tm_y;
-        dx[t2] = (float)XDistance;
-        dy[t2] = (float)YDistance;
-        t2++;
-        if(t2 >= 300) t2 = 0;
+//        pkf.predict(akf.get_X(), gyro, accData, getTime());
+//        pkf.update(akf.get_X());
+//        akf.predict(gyro, getTime());
+//        akf.update(gyro, accData);
+//        akf.GetRPY(rpy[0],rpy[1],rpy[2]);
+//        a = pkf.get_a().getArray();
+//        Matrix x = pkf.get_X();
+//        v = x.getMatrix(0,2,0,0).getArray();
+//        p = x.getMatrix(3,5,0,0).getArray();
+//        Matrix _P = pkf.get_P();
+//        Matrix _Q = pkf.get_P();
+//        // For Debugging
+//        for (int i=0; i<6; ++i) {
+//            for (int j=0; j<6; ++j) {
+//                P[i][j] = _P.get(i, j);
+//            }
+//        }
+//        for (int i=0; i<3; ++i) {
+//            for (int j=0; j<3; ++j) {
+//                Q[i][j] = _Q.get(i, j);
+//            }
+//        }
+//
+//        // 우리나라 TM(Transverse Mercator) 좌표계 원점들의 경위도 값
+//        // 중부 원점: 38, 127
+//        // x-축 : 남북 방향, 북쪽이 +
+//        // y-축 : 동서 방향, 동쪽이 +
+//        Bessel2TM (altitude, longitude,latitude, 127, 38);
+//        tm_y = -tm_y;
+//
+//        double yaw = -DEG2RAD*bearing;
+//        double vel = speed*1000./(60.*60.);
+//
+//        akf.update(yaw, vel);
+//        pkf.update(akf.get_X(), tm_x, tm_y, altitude);
+//        pkf.update(akf.get_X(), vel, 0.01);
+//
+//        tm_x += 200000;
+//        tm_y += 500000;
+//
+//        if(px == 0){
+//            px = tm_x;
+//        }
+//        if(py == 0){
+//            py = tm_y;
+//        }
+//
+//        distance = Math.sqrt(Math.pow((tm_x-px),2) + Math.pow((tm_y-py),2));
+//        XDistance = tm_x-px;
+//        YDistance = tm_y-py;
+//        px = tm_x;
+//        py = tm_y;
+//        dx[t2] = (float)XDistance;
+//        dy[t2] = (float)YDistance;
+//        t2++;
+//        if(t2 >= 300) t2 = 0;
     }
 
     public float getDx(int i){

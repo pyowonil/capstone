@@ -64,12 +64,12 @@ public class MainActivity extends AppCompatActivity {
                         int i = sensorInfo.getT2();
                         if(i == 0) i = 299;
 //                        acctext.setText("x : " + sensorInfo.getData(0,i) + "\ny : " + sensorInfo.getData(1,i) + "\nz : " + sensorInfo.getData(2,i));
-//                        acctext.setText("x : " + sensorInfo.getAccSensor(0,i) + "\ny : " + sensorInfo.getAccSensor(1,i) + "\nz : " + sensorInfo.getAccSensor(2,i));
-                        acctext.setText("DX : " + sensorInfo.getDx(i) + "\nDY : " + sensorInfo.getDx(i));
+                        acctext.setText("x : " + sensorInfo.accData[0] + "\ny : " + sensorInfo.accData[1] + "\nz : " + sensorInfo.accData[2]);
+//                        acctext.setText("DX : " + sensorInfo.getDx(i) + "\nDY : " + sensorInfo.getDx(i));
 //                        mCallbackText.setText("TIME : " + m_gps.time + "\nDISTANCE : " + sensorInfo.getMeter() + "\nSPEED : " + m_gps.speed
 //                                + "\nLAT : " + m_gps.getLatitude()+ "\nLON : " + m_gps.getLongitude() + "\nALT : " + m_gps.getAltitude()+ "\nBER : " + m_gps.bearing);
-                        mCallbackText.setText("TM_X : " + sensorInfo.getTm_x() + "\nTM_Y : " + sensorInfo.getTm_y() + "\nSPEED : " + sensorInfo.getSpeed()
-                                + "\nLAT : " + sensorInfo.getLatitude()+ "\nLON : " + sensorInfo.getLongitude() + "\nALT : " + sensorInfo.getAltitude()+ "\nBER : " + sensorInfo.getBearing());
+//                        mCallbackText.setText("TM_X : " + sensorInfo.getTm_x() + "\nTM_Y : " + sensorInfo.getTm_y() + "\nSPEED : " + sensorInfo.getSpeed()
+//                                + "\nLAT : " + sensorInfo.getLatitude()+ "\nLON : " + sensorInfo.getLongitude() + "\nALT : " + sensorInfo.getAltitude()+ "\nBER : " + sensorInfo.getBearing());
 //                        mCallbackText.setText("이동거리(m) : " + sensorInfo.getMeter() + "\n이동속도(m/s) : " + sensorInfo.getAccSensor(1,i)
 //                                + "\nx축 가속도(m/s) : " + sensorInfo.getAccSensor(2,i) + "\n시간(sec) : " + sensorInfo.getTime());
 //                        mCallbackText.setText("Pn1 : " + sensorInfo.Pn1 + "\tPn2 : " + sensorInfo.Pn2
@@ -335,13 +335,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 if (sensorInfo != null) {
-//                    if (maxSize == 0) {
-//                        maxSize = sensorInfo.getMaxSize();
-//                    }
-//                    t = sensorInfo.getT();
+                    if (maxSize == 0) {
+                        maxSize = sensorInfo.getMaxSize();
+                    }
+                    t = sensorInfo.getT();
                     t2 = sensorInfo.getT2();
-//                    drawAcc(canvas);
-                    drawPos(canvas);
+                    drawAcc(canvas);
+//                    drawPos(canvas);
                 } else {       }
                 invalidate();
             }

@@ -142,6 +142,9 @@ public class SensorService extends Service implements SensorEventListener{
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_ACCELEROMETER:
                     if(stime == 0) stime = System.currentTimeMillis();
+                    etime = System.currentTimeMillis();
+                    sensorInfo.setTime(etime-stime);
+                    stime = etime;
                     acc[0] = event.values[0];
                     acc[1] = event.values[1];
                     acc[2] = event.values[2];
@@ -174,6 +177,7 @@ public class SensorService extends Service implements SensorEventListener{
 
                     // HSR 적용
                     acc = filter.HSR(acc);
+                    acc = m_euler_angles.getFn(acc);
                     sensorInfo.setAccSensor(acc);
 
                     // ------------------ Kalman Filter 적용 부 ------------------
@@ -202,18 +206,16 @@ public class SensorService extends Service implements SensorEventListener{
 //                    sensorInfo.setAccSensor(acc[0], acc[1], acc[2]);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-                    etime = System.currentTimeMillis();
-                    sensorInfo.setTime(etime-stime);
-                    stime = etime;
-                    if(gps!=null){
-                        sensorInfo.setGPS(gps.getLatitude(),gps.getLongitude(),gps.getAltitude(),gps.getSpeed(),gps.getBearing());
-                    }
+
+//                    if(gps!=null){
+//                        sensorInfo.setGPS(gps.getLatitude(),gps.getLongitude(),gps.getAltitude(),gps.getSpeed(),gps.getBearing());
+//                    }
                     gyro = filter.HDR(event.values);
                     sensorInfo.setGyro(gyro);
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     // EulerAngles test ------------------------------
-//                    m_euler_angles.setH(event.values[0], event.values[1], event.values[2]);
+                    m_euler_angles.setH(event.values[0], event.values[1], event.values[2]);
 //                    sensorInfo.setData(m_euler_angles.getFn());
                     //m_euler_kalman.setMagnetic(event.values[0], event.values[1], event.values[2]);
                     // ------------------------------ EulerAngles test

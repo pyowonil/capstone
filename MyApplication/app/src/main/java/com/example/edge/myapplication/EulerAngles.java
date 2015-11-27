@@ -119,9 +119,12 @@ public class EulerAngles {
         double sinpsi = Math.sin(psi);
         double cospsi = Math.cos(psi);
 
-        m_bCn.set(0,0,costheta*cospsi);                         m_bCn.set(0,1,costheta*sinpsi);                         m_bCn.set(0,2,-sintheta);
-        m_bCn.set(1,0,-cosphi*sinpsi+sinphi*sintheta*cospsi);   m_bCn.set(1,1,cosphi*cospsi+sinphi*sintheta*sinpsi);    m_bCn.set(1,2,sinphi*costheta);
-        m_bCn.set(2,0,sinphi*sinpsi+cosphi*sintheta*cospsi);    m_bCn.set(2,1,-sinphi*cospsi+cosphi*sintheta*sinpsi);   m_bCn.set(2,2,cosphi*costheta);
+        //m_bCn.set(0,0,costheta*cospsi);                         m_bCn.set(0,1,costheta*sinpsi);                         m_bCn.set(0,2,-sintheta);
+        //m_bCn.set(1,0,-cosphi*sinpsi+sinphi*sintheta*cospsi);   m_bCn.set(1,1,cosphi*cospsi+sinphi*sintheta*sinpsi);    m_bCn.set(1,2,sinphi*costheta);
+        //m_bCn.set(2,0,sinphi*sinpsi+cosphi*sintheta*cospsi);    m_bCn.set(2,1,-sinphi*cospsi+cosphi*sintheta*sinpsi);   m_bCn.set(2,2,cosphi*costheta);
+        m_bCn.set(0,0,costheta*cospsi);     m_bCn.set(0,1,-cosphi*sinpsi+sinphi*sintheta*cospsi);       m_bCn.set(0,2,sinphi*sinpsi+cosphi*sintheta*cospsi);
+        m_bCn.set(1,0,costheta*sinpsi);     m_bCn.set(1,1,cosphi*cospsi+sinphi*sintheta*sinpsi);        m_bCn.set(1,2,-sinphi*cospsi+cosphi*sintheta*sinpsi);
+        m_bCn.set(2,0,-sintheta);           m_bCn.set(2,1,sinphi*costheta);                             m_bCn.set(2,2,cosphi*costheta);
     }
 
     // ---------- get 함수 ----------

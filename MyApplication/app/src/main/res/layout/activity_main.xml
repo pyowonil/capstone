@@ -33,7 +33,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:id="@+id/linear"
-        android:layout_above="@+id/mCallbackText"></LinearLayout>
+        android:layout_above="@+id/gpsinfo"></LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
@@ -41,7 +41,7 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
         android:id="@+id/mCallbackText"
-        android:layout_above="@+id/gpsinfo"
+        android:layout_above="@+id/btn_gpsinfo"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -51,24 +51,21 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Small Text"
         android:id="@+id/acctext"
-        android:layout_alignTop="@+id/btn_gpsinfo"
-        android:layout_toRightOf="@+id/btn_gpsinfo"
-        android:layout_marginLeft="13dp"
-        android:layout_marginStart="13dp"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/btn_gpsinfo"
+        android:layout_toEndOf="@+id/btn_gpsinfo"
+        android:layout_below="@+id/gpsinfo" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Small Text"
+        android:text="Small Textz"
         android:id="@+id/gpsinfo"
-        android:layout_above="@+id/acctext"
-        android:layout_alignLeft="@+id/acctext"
-        android:layout_alignStart="@+id/acctext"
-        android:layout_alignRight="@+id/acctext"
-        android:layout_alignEnd="@+id/acctext" />
+        android:layout_marginBottom="34dp"
+        android:layout_above="@+id/mCallbackText"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
