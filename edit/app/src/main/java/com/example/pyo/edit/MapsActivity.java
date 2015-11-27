@@ -78,7 +78,7 @@ public class MapsActivity extends AppCompatActivity
     private List<DraggableCircle> mCircles = new ArrayList<DraggableCircle>(1);
     private FrameLayout mDrawMap;
     private boolean IS_MAP_MOVEABLE;
-    private Vector<Point> mDrawPoints;
+    private Vector<Vector<Point>> mDrawPoints;
     private DrawCanvas mDrawCanvas;
 
     // 디버깅용 택스트
@@ -182,7 +182,7 @@ public class MapsActivity extends AppCompatActivity
         // REGISTER DRAW MAP TOUCH LISENTER
         mDrawMap = (FrameLayout)findViewById(R.id.draw_map);
         IS_MAP_MOVEABLE = false;
-        mDrawPoints = new Vector<Point>();
+        mDrawPoints = new Vector<Vector<Point>>();
         mDrawMap.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -190,13 +190,14 @@ public class MapsActivity extends AppCompatActivity
                 if(IS_MAP_MOVEABLE) {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
-                            mDrawPoints.add(point);
+                            mDrawPoints.add(new Vector<Point>());
+                            mDrawPoints.lastElement().add(point);
                             break;
                         case MotionEvent.ACTION_MOVE:
-                            mDrawPoints.add(point);
+                            mDrawPoints.lastElement().add(point);
                             break;
                         case MotionEvent.ACTION_UP:
-                            mDrawPoints.clear();
+                            //mDrawPoints.clear();
                             break;
                     }
                 }
@@ -213,6 +214,7 @@ public class MapsActivity extends AppCompatActivity
     class DrawCanvas extends View {
         private Paint mPaint;
         private Bitmap mBitmap;
+        private Canvas mBitmapCanvas = null;
 
         public DrawCanvas(Context context) {
             super(context);
@@ -220,24 +222,29 @@ public class MapsActivity extends AppCompatActivity
             mPaint.setAntiAlias(true);
             mPaint.setStrokeWidth(10);
             mPaint.setColor(Color.RED);
-            mPaint.setStyle(Paint.Style.FILL);
-            mBitmap = Bitmap.createBitmap(200,200, Bitmap.Config.ARGB_8888);
+//            mBitmap = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
             synchronized (this) {
                 super.onDraw(canvas);
-                //canvas.setBitmap(mBitmap);
+//                if(mBitmapCanvas == null) {
+//                    mBitmapCanvas = new Canvas(mBitmap);
+//                }
+
                 if(mDrawPoints.isEmpty()) {
                     invalidate();
                 } else {
-                    Point a = mDrawPoints.get(0);
-                    int size = mDrawPoints.size();
-                    for (int i = 1; i < size; i++) {
-                        Point b = mDrawPoints.get(i);
-                        canvas.drawLine(a.x, a.y, b.x, b.y, mPaint);
-                        a = b;
+                    for(Vector<Point> points : mDrawPoints) {
+                        Point a = points.get(0);
+                        int size = points.size();
+                        for (int i = 1; i < size; i++) {
+                            Point b = points.get(i);
+                            canvas.drawLine(a.x, a.y, b.x, b.y, mPaint);
+//                        mBitmapCanvas.drawLine(a.x, a.y, b.x, b.y, mPaint);
+                            a = b;
+                        }
                     }
 
                     invalidate();
@@ -360,6 +367,7 @@ public class MapsActivity extends AppCompatActivity
     }
     public void onClickClear(View view) {
         IS_MAP_MOVEABLE = false;
+        mDrawPoints.clear();
         for(DraggableCircle circle : mCircles) {
             circle.remove();
         }
