@@ -24,7 +24,14 @@ class DBManager extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE contact (_id INTEGER PRIMARY KEY AUTOINCREMENT, ssid TEXT, passwd TEXT);");
+        db.execSQL("CREATE TABLE LocalDevice (MAC TEXT PRIMARY KEY, Latitude float, Longitude float, SSID TEXT, " +
+                "PW TEXT, DATE INTEGER, TIME INTEGER);");
+        db.execSQL("CREATE TABLE WifiDevice (MAC TEXT PRIMARY KEY, Latitude float, Longitude float, SSID TEXT, " +
+                "PW TEXT, DATE INTEGER, TIME INTEGER);");
+        db.execSQL("CREATE TABLE LocalData (MAC TEXT PRIMARY KEY, Latitude float, Longitude float, SSID TEXT, " +
+                "RSSI INTEGER, DATE INTEGER, TIME INTEGER);");
+        db.execSQL("CREATE TABLE WifiData (MAC TEXT PRIMARY KEY, Latitude float, Longitude float, SSID TEXT, " +
+                "RSSI INTEGER, DATE INTEGER, TIME INTEGER);");
 
         //db.execSQL("CREATE TABLE LocalData ( MAC TEXT PRIMARY KEY, SSID TEXT,  ")
     }

@@ -18,9 +18,12 @@ import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.lang.Integer;
 
 /**
  * Created by Jang on 2015-11-21.
@@ -36,13 +39,21 @@ public class VWService extends Service implements Runnable {
     SQLiteDatabase db;
 
     GPSInfo gps;
-    private double lat = 38;
-    private double lon = 127;
+
 
     TelephonyManager telephonyManager;
     GsmCellLocation cellLocation;
     WifiManager wifiManager;
     List<ScanResult> apList;
+
+    private String Mac;
+    String ssid;
+    String pw;
+    int rssi;
+    private double lat = 38;
+    private double lon = 127;
+    Date date;
+
 
     public void onCreate(){
         super.onCreate();
@@ -62,94 +73,84 @@ public class VWService extends Service implements Runnable {
     }
 
     public void run(){
-        // 실행부 ( 예시 로그에 5초마다 카운트 )
-        Log.i("ABC", "helper0");
+
         helper = new DBManager(this);
-        Log.i("ABC", "helper");
         try {
             db = helper.getWritableDatabase();
-            Log.i("ABC", "getwritabledb");
             //데이터베이스 객체를 얻기 위하여 getWritableDatabse()를 호출
-
         } catch (SQLiteException e) {
             db = helper.getReadableDatabase();
-            Log.i("ABC", "getReadabledb");
         }
+
 
         while(true){
             try{
                 if(getNetworkInfo() == 1) {
+                    // 시간 저장
+                    long now = System.currentTimeMillis();
+                    date = new Date(now);
+                    SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd");
+                    SimpleDateFormat sdfTime = new SimpleDateFormat("HHmmss");
+                    String strDate = sdfDate.format(date);
+                    String strTime = sdfTime.format(date);
+
+                    int _date = new Integer( Integer.getInteger(strDate));
+                    int _time = new Integer( Integer.getInteger(strTime));
+
+                    // Wifi 정보 저장
                     WifiManager wifimanager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
-                    WifiInfo info = wifimanager.getConnectionInfo();
-                    double distance = Math.pow(10, (info.getRssi() - 32.44 - 20 * Math.log10(info.getFrequency())) / 20);
-                    String str = "SSID : " + info.getSSID() +
-                            "\nMAC ADDR : " + info.getMacAddress() +
-                            //"\tFREQ : " + info.getFrequency() +
-                            "\nLINK SPD : " + info.getLinkSpeed() +
-                            "\nLP ADDR : " + info.getIpAddress() +
-                            "\nNET ID : " + info.getNetworkId() +
-                            "\nRSSI : " + info.getRssi() +
-                            "\nDISTANCE : " + distance*1000;
-                    Log.d("[연결된 와이파이 AP] ", str);
+                    WifiInfo info = wifimanager.getConnectionInfo();  // 연결된 와이파이 정보
 
-                    // FSPL(db) = 20log10(d) + 20log10(f) + K
-                    // d = distance
-                    // f = frequency
-                    // K = constant that depends on the units used for d and f
-                    // db - 32.44 - 20log10(f) / 20
-
-
-                    List<ScanResult> apList = wifimanager.getScanResults();
-
-//                    for(ScanResult result : apList){
-//                        int level = WifiManager.calculateSignalLevel(info.getRssi(), result.level);
-//                        int difference = (level*100)/result.level;
-//                        String ssid = result.SSID;
-//                        int level2 = result.level;
-//                        int freq = result.frequency;
-//                        int freq2 = result.centerFreq0;
-//                        int freq3 = result.centerFreq1;
-//                        int chw = result.channelWidth;
-//                        long time = result.timestamp;
-//                        String str2 = "SSID : " + ssid +
-//                                "\nLEVEL : " + level2 +
-//                                "\nFREQ : " + freq +
-//                                "\nCHANNEL WIDTH : " + chw+
-//                                "\nCENTER FREQ1 : " + freq2 +
-//                                "\nCENTER FREQ1 : " + freq3 +
-//                                "\nTIMESTAMP : " + time;
-//                        Log.d("[와이파이 AP] ", str2);
-//                    }
-//
-//                    String ssid = info.getSSID();
-//                    int rssi = info.getRssi();
-//
-//
-//                    int cellid= cellLocation.getCid();
-//                    int celllac = cellLocation.getLac();
-//                    Log.d("CellLocation", cellLocation.toString());
-//                    Log.d("GSM CELL ID", String.valueOf(cellid));
-//                    Log.d("GSM Location Code", String.valueOf(celllac));
+                    Mac = info.getMacAddress();
+                    ssid = info.getSSID();
+                    rssi = info.getRssi();
+                    pw = "1";
 
                     lat = gps.getLat();
                     lon = gps.getLon();
 
-//                    db.execSQL("INSERT INTO contact VALUES(null, '" + ssid + "','" + rssi + "');");
+                    // Local DB에 insert
+                    db.execSQL("INSERT INTO LocalDevice VALUES('"
+                            +Mac+"', '"
+                            +lat+"','"
+                            +lon+"','"
+                            +ssid+"','"
+                            +pw+"','"
+                            +_date+"','"
+                            +_time+"');"
+                    );
+
+
+                    db.execSQL("INSERT INTO LocalData VALUES('"
+                            +Mac+"','"
+                            +lat+"','"
+                            +lon+"','"
+                            +ssid+"','"
+                            +rssi+"','"
+                            +_date+"','"
+                            +_time+ "');"
+                    );
 
                 }
-                String sql = "SELECT * FROM contact;";
+                String sql = "SELECT * FROM LocalData;";
                 Cursor c = db.rawQuery(sql, null);
                 c.moveToFirst();
 
                 while(c.moveToNext()){
-                    int num = c.getInt(c.getColumnIndex("_id"));
-                    String id = c.getString(c.getColumnIndex("ssid"));
-                    String pw = c.getString(c.getColumnIndex("passwd"));
+                    String _mac = c.getString( c.getColumnIndex("Mac"));
+                    float _lat = c.getFloat(c.getColumnIndex("Latitude"));
+                    float _lng = c.getFloat(c.getColumnIndex("Longitude"));
+                    String _ssid = c.getString(c.getColumnIndex("ssid"));
+                    int _rssi = c.getInt(c.getColumnIndex("rssi"));
+                    int _date = c.getInt(c.getColumnIndex("Date"));
+                    int _time = c.getInt(c.getColumnIndex("Time"));
 
-                    Log.i("cwifi", "num "+num+" / id : "+id+" ,pw :"+pw );
+
+                    Log.i("LocalData", "mac : "+ _mac +"  //  id : "+ _ssid+" ,(lat,lng) : "+ _lat + ","+_lng +"");
+
                 }
-                Log.i("cwifi","------------------------------------------");
+                Log.i("LocalData","------------------------------------------");
                 Thread.sleep(3000);
             }catch(InterruptedException ex){
                 Log.e(TAG, ex.toString());

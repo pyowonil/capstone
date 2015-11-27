@@ -64,7 +64,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static final int REQUEST_CODE_WiFiSetting = 1001;
     public static final int REQUEST_CODE_Filter = 1002;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
