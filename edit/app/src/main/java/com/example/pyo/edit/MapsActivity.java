@@ -135,6 +135,10 @@ public class MapsActivity extends AppCompatActivity
             radiusMarker.remove();
             circle.remove();
         }
+
+        public LatLng getCenter() {
+            return centerMarker.getPosition();
+        }
     }
 
     @Override
@@ -213,26 +217,33 @@ public class MapsActivity extends AppCompatActivity
 
     class DrawCanvas extends View {
         private Paint mPaint;
-        private Bitmap mBitmap;
-        private Canvas mBitmapCanvas = null;
+        private Canvas mCanvas = null;
 
         public DrawCanvas(Context context) {
             super(context);
             mPaint = new Paint();
             mPaint.setAntiAlias(true);
             mPaint.setStrokeWidth(10);
-            mPaint.setColor(Color.RED);
-//            mBitmap = Bitmap.createBitmap(this.getWidth(), this.getHeight(), Bitmap.Config.ARGB_8888);
+            mPaint.setColor(Color.BLACK);
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
             synchronized (this) {
                 super.onDraw(canvas);
-//                if(mBitmapCanvas == null) {
-//                    mBitmapCanvas = new Canvas(mBitmap);
-//                }
+                if(mCanvas != canvas) {
+                    mCanvas = canvas;
+                }
 
+                mPaint.setColor(Color.RED);
+                // Draw Circle
+                for(DraggableCircle circle : mCircles) {
+                    Point center = mMap.getProjection().toScreenLocation(circle.getCenter());
+                    canvas.drawCircle(center.x, center.y, 5, mPaint);
+                }
+
+                mPaint.setColor(Color.BLACK);
+                // Draw Line
                 if(mDrawPoints.isEmpty()) {
                     invalidate();
                 } else {
@@ -242,7 +253,6 @@ public class MapsActivity extends AppCompatActivity
                         for (int i = 1; i < size; i++) {
                             Point b = points.get(i);
                             canvas.drawLine(a.x, a.y, b.x, b.y, mPaint);
-//                        mBitmapCanvas.drawLine(a.x, a.y, b.x, b.y, mPaint);
                             a = b;
                         }
                     }
@@ -253,7 +263,6 @@ public class MapsActivity extends AppCompatActivity
         }
 
         public void saveBitmap() {
-
         }
     }
 
