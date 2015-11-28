@@ -51,6 +51,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Vector;
 
 public class MapsActivity extends AppCompatActivity
@@ -217,7 +218,7 @@ public class MapsActivity extends AppCompatActivity
 
     class DrawCanvas extends View {
         private Paint mPaint;
-        private Canvas mCanvas = null;
+        private Bitmap mBitmap;
 
         public DrawCanvas(Context context) {
             super(context);
@@ -225,29 +226,32 @@ public class MapsActivity extends AppCompatActivity
             mPaint.setAntiAlias(true);
             mPaint.setStrokeWidth(10);
             mPaint.setColor(Color.BLACK);
+
+            this.setDrawingCacheEnabled(true);
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
             synchronized (this) {
                 super.onDraw(canvas);
-                if(mCanvas != canvas) {
-                    mCanvas = canvas;
+
+                if(mCurrentMode == mMode.RUN) {
+                    canvas.drawBitmap(mBitmap,0,0,null);
                 }
 
                 mPaint.setColor(Color.RED);
                 // Draw Circle
-                for(DraggableCircle circle : mCircles) {
+                for (DraggableCircle circle : mCircles) {
                     Point center = mMap.getProjection().toScreenLocation(circle.getCenter());
                     canvas.drawCircle(center.x, center.y, 5, mPaint);
                 }
 
                 mPaint.setColor(Color.BLACK);
                 // Draw Line
-                if(mDrawPoints.isEmpty()) {
-                    invalidate();
+                if (mDrawPoints.isEmpty()) {
+                    ;
                 } else {
-                    for(Vector<Point> points : mDrawPoints) {
+                    for (Vector<Point> points : mDrawPoints) {
                         Point a = points.get(0);
                         int size = points.size();
                         for (int i = 1; i < size; i++) {
@@ -256,13 +260,20 @@ public class MapsActivity extends AppCompatActivity
                             a = b;
                         }
                     }
-
-                    invalidate();
                 }
+                invalidate();
+
             }
         }
 
-        public void saveBitmap() {
+        public void simulate() {
+            this.buildDrawingCache();
+            mBitmap = Bitmap.createBitmap(this.getDrawingCache());
+            this.setDrawingCacheEnabled(false);
+
+            // TODO 시뮬레이트
+
+            this.setDrawingCacheEnabled(true);
         }
     }
 
@@ -387,12 +398,13 @@ public class MapsActivity extends AppCompatActivity
     }
     public void onClickRun(View view) {
         IS_MAP_MOVEABLE = false;
-        mCurrentMode = mMode.RUN;
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(false);
         }
         // TODO
         // 실제 선정된 기기를 통한 연산 필요
+        mDrawCanvas.simulate();
+        mCurrentMode = mMode.RUN;
     }
     public void onClickExit(View view) {
         IS_MAP_MOVEABLE = false;
