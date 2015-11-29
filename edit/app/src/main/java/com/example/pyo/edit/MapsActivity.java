@@ -287,10 +287,10 @@ public class MapsActivity extends AppCompatActivity
                 int r = Math.abs(radius.x - center.x);
                 // 원점이 가려지거나 일부분이 가려진경우 해당지점의 범위를 효과적으로 구하기 힘들기 때문에
                 // 비트맵 사이즈를 넘어가는 크기더라도 일단 관심영역으로 지정하고 추후에 표시할때 걸러냄
-                int min_x = center.x-r; //if(min_x < 0) min_x = 0;
-                int max_x = center.x+r; //if(max_x > width) max_x = width;
-                int min_y = center.y-r; //if(min_y < 0) min_y = 0;
-                int max_y = center.y+r; //if(max_y > height) max_y = height;
+                int min_x = center.x-r; if(min_x < 0) min_x = 0;
+                int max_x = center.x+r; if(max_x > width) max_x = width;
+                int min_y = center.y-r; if(min_y < 0) min_y = 0;
+                int max_y = center.y+r; if(max_y > height) max_y = height;
 
                 // 관심영역으로 선정된 영역을 BFS를 이용하여 추정
                 int w = max_x-min_x+1;
