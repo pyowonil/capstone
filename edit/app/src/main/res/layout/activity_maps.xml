@@ -92,7 +92,16 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
             android:layout_above="@+id/linearLayout"
-            android:id="@+id/draw_map"></FrameLayout>
+            android:id="@+id/draw_map">
+
+        </FrameLayout>
+
+        <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/deviceListView"
+            android:layout_gravity="center"
+            android:layout_alignBottom="@+id/draw_map" />
 
     </RelativeLayout>
 

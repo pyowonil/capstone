@@ -32,8 +32,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -90,6 +93,8 @@ public class MapsActivity extends AppCompatActivity
     private enum mMode {DEFAULT, DRAW, LOAD, RUN, EXIT};
     private mMode mCurrentMode = mMode.DEFAULT;
 
+    private ListView mDeviceListView;
+    private ArrayList<String> mDeviceList;
 
     // 원을 관리하는 클래스
     private class DraggableCircle {
@@ -185,6 +190,22 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         mInfoTap = (TextView)findViewById(R.id.tap);
+        mDeviceListView = (ListView)findViewById(R.id.deviceListView);
+        mDeviceList = new ArrayList<String>();
+        mDeviceList.add("Device1 10m");
+        mDeviceList.add("Device2 15m");
+        mDeviceList.add("Device3 20m");
+        mDeviceList.add("Device4 25m");
+        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, mDeviceList);
+        mDeviceListView.setAdapter(adapter);
+        mDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mDeviceRange = 10 + 5 * position;
+                mDeviceListView.setVisibility(View.INVISIBLE);
+            }
+        });
+        mDeviceListView.setVisibility(View.INVISIBLE);
 
         // REGISTER DRAW MAP TOUCH LISENTER
         mDrawMap = (FrameLayout)findViewById(R.id.draw_map);
@@ -194,7 +215,7 @@ public class MapsActivity extends AppCompatActivity
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 Point point = new Point(Math.round(event.getX()), Math.round(event.getY()));
-                if(IS_MAP_MOVEABLE) {
+                if (IS_MAP_MOVEABLE) {
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
                             mDrawPoints.add(new Vector<Point>());
@@ -513,6 +534,7 @@ public class MapsActivity extends AppCompatActivity
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(true);
         }
+        mDeviceListView.setVisibility(View.VISIBLE);
     }
     public void onClickClear(View view) {
         IS_MAP_MOVEABLE = false;
