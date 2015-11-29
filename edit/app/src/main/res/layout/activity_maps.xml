@@ -43,6 +43,14 @@
             <Button
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:text="BACK"
+                android:id="@+id/btn_back"
+                android:onClick="onClickBack"
+                android:layout_weight="1" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:text="LOAD"
                 android:id="@+id/btn_load"
                 android:onClick="onClickLoad"

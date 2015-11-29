@@ -500,6 +500,11 @@ public class MapsActivity extends AppCompatActivity
             circle.markerDraggable(false);
         }
     }
+    public void onClickBack(View view) {
+        if(!mDrawPoints.isEmpty()) {
+            mDrawPoints.remove(mDrawPoints.size()-1);
+        }
+    }
     public void onClickLoad(View view) {
         mLock = true;
         mUiSettings.setAllGesturesEnabled(mLock);
