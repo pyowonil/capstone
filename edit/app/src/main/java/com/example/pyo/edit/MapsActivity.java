@@ -378,7 +378,20 @@ public class MapsActivity extends AppCompatActivity
                         int by = y+min_y;
                         // 비트맵에 표시가능한 것만 표시
                         if(bx >= 0 && bx < width && by >= 0 && by < height) {
-                            mBitmap.setPixel(bx, by, Color.argb(map[x][y] * 255 / r, map[x][y] * 255 / r, map[x][y] * 255 / r, map[x][y] * 255 / r));
+                            int level = map[x][y]*255/r;
+                            if(level < 100) {
+                                mBitmap.setPixel(bx, by, Color.argb(0,0,0,0));
+                            }else if(level < 150) {
+                                mBitmap.setPixel(bx, by, Color.argb(80,255,0,0));
+                            }else if(level < 170) {
+                                mBitmap.setPixel(bx, by, Color.argb(80,200,100,0));
+                            }else if(level < 190) {
+                                mBitmap.setPixel(bx, by, Color.argb(80,150,150,0));
+                            }else if(level < 220) {
+                                mBitmap.setPixel(bx, by, Color.argb(80,0,255,0));
+                            }else {
+                                mBitmap.setPixel(bx, by, Color.argb(80,0,0,255));
+                            }
                         }
                     }
                 }
