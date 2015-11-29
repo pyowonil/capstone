@@ -40,6 +40,7 @@ import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -140,6 +141,7 @@ public class MapsActivity extends AppCompatActivity
         public LatLng getCenter() {
             return centerMarker.getPosition();
         }
+        public double getRadius() { return radius; }
     }
 
     @Override
@@ -272,6 +274,85 @@ public class MapsActivity extends AppCompatActivity
             this.setDrawingCacheEnabled(false);
 
             // TODO 시뮬레이트
+            // 비트맵 전체 크기 계산 및 위도 <-> 디바이스 좌표 변환용 프로젝션 생성
+            int width = mBitmap.getWidth();
+            int height = mBitmap.getHeight();
+            Projection projection = mMap.getProjection();
+
+            // 하나의 디바이스마다 계산 (이터레이터 이용)
+            for(DraggableCircle circle : mCircles) {
+                // 관심 구역 설정
+                Point center = projection.toScreenLocation(circle.getCenter());
+                Point radius = projection.toScreenLocation(toRadiusLatLng(circle.getCenter(), circle.getRadius()));
+                int r = Math.abs(radius.x - center.x);
+                // 원점이 가려지거나 일부분이 가려진경우 해당지점의 범위를 효과적으로 구하기 힘들기 때문에
+                // 비트맵 사이즈를 넘어가는 크기더라도 일단 관심영역으로 지정하고 추후에 표시할때 걸러냄
+                int min_x = center.x-r; //if(min_x < 0) min_x = 0;
+                int max_x = center.x+r; //if(max_x > width) max_x = width;
+                int min_y = center.y-r; //if(min_y < 0) min_y = 0;
+                int max_y = center.y+r; //if(max_y > height) max_y = height;
+
+                // 관심영역으로 선정된 영역을 BFS를 이용하여 추정
+                int w = max_x-min_x+1;
+                int h = max_y-min_y+1;
+                int[][] map = new int[w][h];
+                Vector<Point> queue = new Vector<Point>();
+                queue.add(new Point(center.x-min_x, center.y-min_y));
+                map[center.x-min_x][center.y-min_y] = r;
+
+                // BFS
+                while(!queue.isEmpty()) {
+                    Point point = queue.firstElement();
+                    int x = point.x;
+                    int y = point.y;
+                    int bx = x+min_x;
+                    int by = y+min_y;
+                    if(map[x][y] > 0 && bx >= 0 && bx < width && by >=0 && by < height) {
+                        // 벽에 의한 감소 적용
+                        int d = 1;
+                        if(mBitmap.getPixel(bx, by) == Color.BLACK) d = 5;
+
+                        if(x>0) {
+                            if(map[x][y] - map[x-1][y] > 5) {
+                                queue.add(new Point(x-1, y));
+                                map[x-1][y] = map[x][y] - d;
+                            }
+                        }
+                        if(x<w) {
+                            if(map[x][y] - map[x+1][y] > 5) {
+                                queue.add(new Point(x+1, y));
+                                map[x+1][y] = map[x][y] - d;
+                            }
+                        }
+                        if(y>0) {
+                            if(map[x][y] - map[x][y-1] > 5) {
+                                queue.add(new Point(x, y-1));
+                                map[x][y-1] = map[x][y] - d;
+                            }
+                        }
+                        if(y<h) {
+                            if(map[x][y] - map[x][y+1] > 5) {
+                                queue.add(new Point(x, y+1));
+                                map[x][y+1] = map[x][y] - d;
+                            }
+                        }
+                    }
+
+                    queue.remove(0);
+                }
+
+                // 결과를 비트맵에 저장
+                for(int x=0; x<w; x++) {
+                    for(int y=0; y<h; y++) {
+                        int bx = x+min_x;
+                        int by = y+min_y;
+                        // 비트맵에 표시가능한 것만 표시
+                        if(bx >= 0 && bx < width && by >= 0 && by < height) {
+                            mBitmap.setPixel(bx, by, Color.argb(150, map[x][y] * 255 / r, map[x][y] * 255 / r, map[x][y] * 255 / r));
+                        }
+                    }
+                }
+            }
 
             this.setDrawingCacheEnabled(true);
         }
