@@ -309,31 +309,61 @@ public class MapsActivity extends AppCompatActivity
                     int by = y+min_y;
                     if(map[x][y] > 0 && bx >= 0 && bx < width && by >=0 && by < height) {
                         // 벽에 의한 감소 적용
-                        int d = 1;
-                        if(mBitmap.getPixel(bx, by) == Color.BLACK) d = 5;
+                        int d = 3;
+                        if(mBitmap.getPixel(bx, by) == Color.BLACK) d = 8;
 
-                        if(x>0) {
-                            if(map[x][y] - map[x-1][y] > 5) {
-                                queue.add(new Point(x-1, y));
-                                map[x-1][y] = map[x][y] - d;
+                        // Bresenham Algorithm 순서에 의한 BFS 적용 (원형으로 색칠)
+                        int xk = 0;
+                        int yk = 5;
+                        int pk = -7; // 3 - 2*yk
+                        int rx,ry;
+                        while(xk<=yk) {
+                            rx = x+xk; ry = y-yk;
+                            if(rx >= 0 && rx < w && ry >= 0 && ry < h && (map[x][y] - map[rx][ry] > 10)) {
+                                map[rx][ry] = map[x][y] - d;
+                                queue.add(new Point(rx, ry));
                             }
-                        }
-                        if(x<w) {
-                            if(map[x][y] - map[x+1][y] > 5) {
-                                queue.add(new Point(x+1, y));
-                                map[x+1][y] = map[x][y] - d;
+                            rx = x-xk; ry = y-yk;
+                            if(rx >= 0 && rx < w && ry >= 0 && ry < h && (map[x][y] - map[rx][ry] > 10)) {
+                                map[rx][ry] = map[x][y] - d;
+                                queue.add(new Point(rx, ry));
                             }
-                        }
-                        if(y>0) {
-                            if(map[x][y] - map[x][y-1] > 5) {
-                                queue.add(new Point(x, y-1));
-                                map[x][y-1] = map[x][y] - d;
+                            rx = x+xk; ry = y+yk;
+                            if(rx >= 0 && rx < w && ry >= 0 && ry < h && (map[x][y] - map[rx][ry] > 10)) {
+                                map[rx][ry] = map[x][y] - d;
+                                queue.add(new Point(rx, ry));
                             }
-                        }
-                        if(y<h) {
-                            if(map[x][y] - map[x][y+1] > 5) {
-                                queue.add(new Point(x, y+1));
-                                map[x][y+1] = map[x][y] - d;
+                            rx = x-xk; ry = y+yk;
+                            if(rx >= 0 && rx < w && ry >= 0 && ry < h && (map[x][y] - map[rx][ry] > 10)) {
+                                map[rx][ry] = map[x][y] - d;
+                                queue.add(new Point(rx, ry));
+                            }
+                            rx = x+yk; ry = y-xk;
+                            if(rx >= 0 && rx < w && ry >= 0 && ry < h && (map[x][y] - map[rx][ry] > 10)) {
+                                map[rx][ry] = map[x][y] - d;
+                                queue.add(new Point(rx, ry));
+                            }
+                            rx = x+yk; ry = y+xk;
+                            if(rx >= 0 && rx < w && ry >= 0 && ry < h && (map[x][y] - map[rx][ry] > 10)) {
+                                map[rx][ry] = map[x][y] - d;
+                                queue.add(new Point(rx, ry));
+                            }
+                            rx = x-yk; ry = y-xk;
+                            if(rx >= 0 && rx < w && ry >= 0 && ry < h && (map[x][y] - map[rx][ry] > 10)) {
+                                map[rx][ry] = map[x][y] - d;
+                                queue.add(new Point(rx, ry));
+                            }
+                            rx = x-yk; ry = y+xk;
+                            if(rx >= 0 && rx < w && ry >= 0 && ry < h && (map[x][y] - map[rx][ry] > 10)) {
+                                map[rx][ry] = map[x][y] - d;
+                                queue.add(new Point(rx, ry));
+                            }
+
+                            xk += 1;
+                            if(pk < 0) pk += (xk*4)+6;
+                            else {
+                                yk -= 1;
+                                pk += ((xk-yk)*4)+10;
                             }
                         }
                     }
@@ -348,7 +378,7 @@ public class MapsActivity extends AppCompatActivity
                         int by = y+min_y;
                         // 비트맵에 표시가능한 것만 표시
                         if(bx >= 0 && bx < width && by >= 0 && by < height) {
-                            mBitmap.setPixel(bx, by, Color.argb(150, map[x][y] * 255 / r, map[x][y] * 255 / r, map[x][y] * 255 / r));
+                            mBitmap.setPixel(bx, by, Color.argb(map[x][y] * 255 / r, map[x][y] * 255 / r, map[x][y] * 255 / r, map[x][y] * 255 / r));
                         }
                     }
                 }
