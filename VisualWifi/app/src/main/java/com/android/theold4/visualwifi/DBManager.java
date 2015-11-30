@@ -28,10 +28,10 @@ class DBManager extends SQLiteOpenHelper {
                 "PW TEXT, DATE INTEGER, TIME INTEGER);");
         db.execSQL("CREATE TABLE WifiDevice (MAC TEXT PRIMARY KEY, Latitude float, Longitude float, SSID TEXT, " +
                 "PW TEXT, DATE INTEGER, TIME INTEGER);");
-        db.execSQL("CREATE TABLE LocalData (MAC TEXT PRIMARY KEY, Latitude float, Longitude float, SSID TEXT, " +
-                "RSSI INTEGER, DATE INTEGER, TIME INTEGER);");
-        db.execSQL("CREATE TABLE WifiData (MAC TEXT PRIMARY KEY, Latitude float, Longitude float, SSID TEXT, " +
-                "RSSI INTEGER, DATE INTEGER, TIME INTEGER);");
+        db.execSQL("CREATE TABLE LocalData (MAC TEXT, Latitude float, Longitude float, SSID TEXT, " +
+                "RSSI INTEGER, DATE INTEGER, TIME INTEGER, CONSTRAINT data_uc UNIQUE(MAC, Latitude, Longitude ));");
+        db.execSQL("CREATE TABLE WifiData (MAC TEXT, Latitude float, Longitude float, SSID TEXT, " +
+                "RSSI INTEGER, DATE INTEGER, TIME INTEGER, CONSTRAINT data_uc UNIQUE(MAC, Latitude, Longitude ));");
 
         //db.execSQL("CREATE TABLE LocalData ( MAC TEXT PRIMARY KEY, SSID TEXT,  ")
     }

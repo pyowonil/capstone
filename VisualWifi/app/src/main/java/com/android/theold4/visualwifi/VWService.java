@@ -34,12 +34,9 @@ public class VWService extends Service implements Runnable {
     public static final String TAG = "VWS";
     public int count =0;
     Thread myThread;
-
     DBManager helper;
     SQLiteDatabase db;
-
     GPSInfo gps;
-
 
     TelephonyManager telephonyManager;
     GsmCellLocation cellLocation;
@@ -64,7 +61,6 @@ public class VWService extends Service implements Runnable {
 
         // 쓰레드 객체 생성 후 시작
         myThread = new Thread(this);
-        Log.i(TAG,"thread");
         myThread.start();
     }
 
@@ -75,6 +71,8 @@ public class VWService extends Service implements Runnable {
     public void run(){
         Integer date;
         Integer time;
+        int _date;
+        int _time;
 
         helper = new DBManager(this);
         try {
@@ -97,8 +95,9 @@ public class VWService extends Service implements Runnable {
                     String strDate = sdfDate.format(MyDate);
                     String strTime = sdfTime.format(MyDate);
 
-                    date =  Integer.getInteger(strDate);
-                    time =  Integer.getInteger(strTime);
+                   _date = Integer.parseInt(strDate);
+                    _time = Integer.parseInt(strTime);
+
 
                     // Wifi 정보 저장
                     WifiManager wifimanager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -108,56 +107,58 @@ public class VWService extends Service implements Runnable {
                     Mac = info.getMacAddress();
                     ssid = info.getSSID();
                     rssi = info.getRssi();
-                    pw = "1";
+                    pw = "";
 
                     lat = gps.getLat();
                     lon = gps.getLon();
 
-                    // Local DB에 insert
-                    db.execSQL("INSERT INTO LocalDevice VALUES('"
-                            +Mac+"', '"
-                            +lat+"','"
-                            +lon+"','"
-                            +ssid+"','"
-                            +pw+"','"
-                            +date+"','"
-                            +time+"');"
-                    );
+                    try {
+                        // Local DB에 insert
+                        db.execSQL("REPLACE INTO LocalDevice VALUES ('"
+                                        + Mac + "', '"
+                                        + lat + "', '"
+                                        + lon + "', '"
+                                        + ssid + "', '"
+                                        + pw + "', '"
+                                        + _date + "', '"
+                                        + _time + "');"
+                        );
 
-
-                    db.execSQL("INSERT INTO LocalData VALUES('"
-                            +Mac+"','"
-                            +lat+"','"
-                            +lon+"','"
-                            +ssid+"','"
-                            +rssi+"','"
-                            +date+"','"
-                            +time+ "');"
-                    );
-
-
-
-
+                        db.execSQL("REPLACE INTO LocalData VALUES ('"
+                                        + Mac + "', '"
+                                        + lat + "', '"
+                                        + lon + "', '"
+                                        + ssid + "', '"
+                                        + rssi + "', '"
+                                        + _date + "', '"
+                                        + _time + "');"
+                        );
+                    }
+                    catch(Exception e){
+                        Log.i("DB","insert error");
+                    }
                 }
-                String sql = "SELECT * FROM LocalData;";
-                Cursor c = db.rawQuery(sql, null);
-                c.moveToFirst();
-
-                while(c.moveToNext()){
-                    String _mac = c.getString( c.getColumnIndex("Mac"));
-                    float _lat = c.getFloat(c.getColumnIndex("Latitude"));
-                    float _lng = c.getFloat(c.getColumnIndex("Longitude"));
-                    String _ssid = c.getString(c.getColumnIndex("ssid"));
-                    int _rssi = c.getInt(c.getColumnIndex("rssi"));
-                    int _date = c.getInt(c.getColumnIndex("Date"));
-                    int _time = c.getInt(c.getColumnIndex("Time"));
-
-
-                    Log.i("LocalData", "mac : "+ _mac +"  //  id : "+ _ssid+" ,(lat,lng) : "+ _lat + ","+_lng +"");
-
-                }
-                Log.i("LocalData","------------------------------------------");
                 Thread.sleep(3000);
+
+                // 쿼리로 DB내용 확인
+//                String sql = "SELECT * FROM LocalData;";
+//                Cursor c = db.rawQuery(sql, null);
+//                while(c.moveToNext()){
+//                    String _mac = c.getString( c.getColumnIndex("MAC"));
+//                    float _lat = c.getFloat(c.getColumnIndex("Latitude"));
+//                    float _lng = c.getFloat(c.getColumnIndex("Longitude"));
+//                    String _ssid = c.getString(c.getColumnIndex("SSID"));
+//                    int _rssi = c.getInt(c.getColumnIndex("RSSI"));
+//                    _date = c.getInt(c.getColumnIndex("DATE"));
+//                    _time = c.getInt(c.getColumnIndex("TIME"));
+//
+//                    //_date -> yyyymmdd 형식   _time -> hhmmss  mmss 는 4자리 고정, h만 1~2자리
+//                   // Log.i("LocalData", "mac : "+ _mac +"  //  id : "+ _ssid+" ,(lat,lng) : "+ _lat + ","+_lng +"");
+//                   // Log.i("LocalData", "ssid : "+ _ssid+"   // rssi : "+_rssi+"   date : "+_date+" "+_time);
+//
+//                }
+//                // Log.i("LocalData","------------------------------------------");
+
             }catch(InterruptedException ex){
                 Log.e(TAG, ex.toString());
                 break;
