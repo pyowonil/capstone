@@ -52,7 +52,7 @@ public class VWService extends Service implements Runnable {
     int rssi;
     private double lat = 38;
     private double lon = 127;
-    Date date;
+    Date MyDate;
 
 
     public void onCreate(){
@@ -73,6 +73,8 @@ public class VWService extends Service implements Runnable {
     }
 
     public void run(){
+        Integer date;
+        Integer time;
 
         helper = new DBManager(this);
         try {
@@ -86,16 +88,17 @@ public class VWService extends Service implements Runnable {
         while(true){
             try{
                 if(getNetworkInfo() == 1) {
+
                     // 시간 저장
                     long now = System.currentTimeMillis();
-                    date = new Date(now);
+                    MyDate = new Date(now);
                     SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd");
                     SimpleDateFormat sdfTime = new SimpleDateFormat("HHmmss");
-                    String strDate = sdfDate.format(date);
-                    String strTime = sdfTime.format(date);
+                    String strDate = sdfDate.format(MyDate);
+                    String strTime = sdfTime.format(MyDate);
 
-                    int _date = new Integer( Integer.getInteger(strDate));
-                    int _time = new Integer( Integer.getInteger(strTime));
+                    date =  Integer.getInteger(strDate);
+                    time =  Integer.getInteger(strTime);
 
                     // Wifi 정보 저장
                     WifiManager wifimanager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -117,8 +120,8 @@ public class VWService extends Service implements Runnable {
                             +lon+"','"
                             +ssid+"','"
                             +pw+"','"
-                            +_date+"','"
-                            +_time+"');"
+                            +date+"','"
+                            +time+"');"
                     );
 
 
@@ -128,9 +131,12 @@ public class VWService extends Service implements Runnable {
                             +lon+"','"
                             +ssid+"','"
                             +rssi+"','"
-                            +_date+"','"
-                            +_time+ "');"
+                            +date+"','"
+                            +time+ "');"
                     );
+
+
+
 
                 }
                 String sql = "SELECT * FROM LocalData;";
