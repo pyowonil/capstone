@@ -33,7 +33,7 @@
     -->
     <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyC-WlzZ8EQ65IgYkiewnsTuL3oAhM3rmAE" />
+        android:value="AIzaSyDGmG7Y30F0JJtc4RxEm-GqhPMILyQoPQA" />
 
     <activity
         android:name=".MapsActivity"
@@ -69,6 +69,9 @@
     <service android:name=".AutoConnectService"
         android:enabled="true"
         >
+    </service>
+    <service android:name=".SyncService"
+        android:enabled="true">
     </service>
 
 </application>

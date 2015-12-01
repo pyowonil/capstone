@@ -112,6 +112,9 @@ public class VWService extends Service implements Runnable {
                     lat = gps.getLat();
                     lon = gps.getLon();
 
+                    lat = Math.round(lat*1000d) / 1000d;
+                    lon = Math.round(lon*1000d) / 1000d;
+
                     try {
                         // Local DB에 insert
                         db.execSQL("REPLACE INTO LocalDevice VALUES ('"

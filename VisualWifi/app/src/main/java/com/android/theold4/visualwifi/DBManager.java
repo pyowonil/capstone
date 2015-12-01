@@ -33,11 +33,10 @@ class DBManager extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE WifiData (MAC TEXT, Latitude float, Longitude float, SSID TEXT, " +
                 "RSSI INTEGER, DATE INTEGER, TIME INTEGER, CONSTRAINT data_uc UNIQUE(MAC, Latitude, Longitude ));");
 
-        //db.execSQL("CREATE TABLE LocalData ( MAC TEXT PRIMARY KEY, SSID TEXT,  ")
     }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXITS contact");
+
         onCreate(db);
     }
 

@@ -3,6 +3,9 @@ package com.android.theold4.visualwifi;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -31,20 +34,36 @@ public class WifiSettingActivity extends AppCompatActivity implements View.OnCli
 
         buttonDownload.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){     // 동기화 -> (LocalData) 업로드, (WifiData, WifiDevice) 다운로드 //  SQLite , 서버 통신
-                Intent downIntent = new Intent();
+                Intent downIntent = new Intent(WifiSettingActivity.this,SyncService.class);
                 downIntent.putExtra("setting", "download");
-
+                startService(downIntent);
                 setResult(RESULT_OK, downIntent);
+                stopService(downIntent);
                 finish();
             }
         });
 
         buttonUpload.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){       // 업로드 -> (LocalDevice) 업로드  리스트에서 1개씩만 선택해서 가능  // SQLite , 서버 통신
-                Intent upIntent = new Intent();
-                upIntent.putExtra("name","upload");
 
-                setResult(RESULT_OK, upIntent);
+                DBManager helper = new DBManager(getApplicationContext());;
+                SQLiteDatabase db_r;
+                db_r = helper.getReadableDatabase();
+
+                String sql = "SELECT * FROM WifiData;";
+                Cursor c = db_r.rawQuery(sql, null);
+                while(c.moveToNext()){
+                    String mac = c.getString( c.getColumnIndex("MAC"));
+                    float lat = c.getFloat(c.getColumnIndex("Latitude"));
+                    float lon = c.getFloat(c.getColumnIndex("Longitude"));
+                    String ssid = c.getString(c.getColumnIndex("SSID"));
+                    int rssi = c.getInt(c.getColumnIndex("RSSI"));
+                    int date = c.getInt(c.getColumnIndex("DATE"));
+                    int time = c.getInt(c.getColumnIndex("TIME"));
+
+                    Log.i("db",""+mac+" "+lat+" "+lon+" "+ssid+" "+rssi+" "+date+" "+time);
+                }
+
                 finish();
             }
         });
@@ -52,25 +71,21 @@ public class WifiSettingActivity extends AppCompatActivity implements View.OnCli
         switchAuto.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(CompoundButton buttonView,boolean isChecked){
-                Log.i("Switch1","act");
                 Context context;
 //                Intent intentService = new Intent(".AutoConnectService");
                 Intent intentService = new Intent(WifiSettingActivity.this, AutoConnectService.class);
                 if(isChecked){
-                    Log.i("Switch1","act2-1");
                     // Wifi 자동연결 상태일때
                     buttonWifiList.setVisibility(View.INVISIBLE);
                     // Wifi 자동 연결 서비스 시작
                     startService(intentService);
-
                 }
                 else{
                     // Wifi 수동연결 상태일때
                     // Wifi 선택 버튼 보여짐
-                    Log.i("Switch1","act2-2");
                     buttonWifiList.setVisibility(View.VISIBLE);
                     // Wifi 자동 연결 서비스 종료
-                    Log.i("Switch1","act3");
+                    stopService(intentService);
                 }
 
             }
@@ -97,4 +112,5 @@ public class WifiSettingActivity extends AppCompatActivity implements View.OnCli
     public void onClick(View v) {
 
     }
+
 }
