@@ -181,19 +181,23 @@ public class visual_wifi_map extends AppCompatActivity
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             mSelectedItem = mDrawerListItems.get(position);
             if(mSelectedItem == getResources().getString(R.string.wifi_setting)) {
+                // [DONE] wifi setting과 관련된 리스트를 보여준다
                 setDrawerListItems();
-
             } else if(mSelectedItem == getResources().getString(R.string.filtering)) {
-
+                // [] filtering과 관련된 리스트를 보여준다.
+                // TODO 아래의 closeDrawer부분에 새로운 리스트를 보여주는 코드 필요
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
             } else if (mSelectedItem == getResources().getString(R.string.editor)) {
+                // [DONE] 새로운 에디터 액티비티를 실행한다.
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
                 Intent intent = new Intent(visual_wifi_map.this, editor.class);
-
                 intent.putExtra(getResources().getString(R.string.position), mMap.getCameraPosition());
                 startActivity(intent);
             } else if(mSelectedItem == getResources().getString(R.string.wifi_synchronize)) {
-
+                // [] wifi 동기화하는 서비스를 실행한다.
+                // - - - - - - - - - - WIFI 동기화 서비스 시작(자동 종료) - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                Intent synchronize = new Intent(visual_wifi_map.this, wifi_setting_synchronize.class);
+                startService(synchronize);
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
                 setDrawerListItems();
             } else if(mSelectedItem == getResources().getString(R.string.wifi_upload)) {

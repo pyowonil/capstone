@@ -18,9 +18,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Created by pyowo on 2015-12-01.
- */
 public class wifi_connection_auto extends Service {
     private WifiManager mWifiManager;
     private List<ScanResult> mScanResult;
@@ -85,7 +82,7 @@ public class wifi_connection_auto extends Service {
                     } else {
                         // TODO 현재 연결이 끊기는 경우 잡아서 반영해야 함
                         NetworkInfo.State wifistate = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
-                        if(wifistate == NetworkInfo.State.CONNECTED || wifistate == NetworkInfo.State.CONNECTING) {
+                        if(wifistate == NetworkInfo.State.CONNECTED) {
                             Log.i("[WIFI]", "Continue");
                             Thread.sleep(10000);
                         } else {

@@ -62,6 +62,12 @@
                 <action android:name="wifi_connection_auto"></action>
             </intent-filter>
         </service>
+
+        <service android:name=".wifi_setting_synchronize" android:enabled="true">
+            <intent-filter>
+                <action android:name="wifi_setting_synchronize"></action>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
