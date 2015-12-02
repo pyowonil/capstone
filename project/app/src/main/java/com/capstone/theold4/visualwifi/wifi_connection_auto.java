@@ -29,7 +29,7 @@ public class wifi_connection_auto extends Service {
                 // TODO 와이파이 스캔 결과 얻기
                 mWifiManager.startScan();
             } else if(action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
-                // TODO 와이파이
+                // TODO 와이파이 ... 이거 필요한가?
             }
         }
     };
@@ -54,7 +54,7 @@ public class wifi_connection_auto extends Service {
         public void run() {
             try{
                 while(!Thread.currentThread().isInterrupted()) {
-                    // TODO 와이파이 자동 연결 시도
+                    // 와이파이 자동 연결 시도
                     if(!mIsConnection) {
                         mScanResult = mWifiManager.getScanResults();
                         Collections.sort(mScanResult, mScanResultComparator);
@@ -80,7 +80,7 @@ public class wifi_connection_auto extends Service {
                             }
                         }
                     } else {
-                        // TODO 현재 연결이 끊기는 경우 잡아서 반영해야 함
+                        // 현재 연결이 끊기는 경우 잡아서 반영함
                         NetworkInfo.State wifistate = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
                         if(wifistate == NetworkInfo.State.CONNECTED) {
                             Log.i("[WIFI]", "Continue");
@@ -105,7 +105,7 @@ public class wifi_connection_auto extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        // TODO 와이파이 관련 변수들 초기화
+        // 와이파이 관련 변수들 초기화
         mWifiManager = (WifiManager)getSystemService(WIFI_SERVICE);
         final IntentFilter filter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
@@ -160,8 +160,8 @@ public class wifi_connection_auto extends Service {
 
     // = = = = = = = = = = 와이파이 연결 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     public boolean connect(String SSID, String password, String capability) {
+        // TODO 자세한 메커니즘 확인 필요
         boolean success = false;
-        //  TODO 성공하면 success -> true
         WifiConfiguration wfc = new WifiConfiguration();
 
         wfc.SSID = "\"".concat( SSID ).concat("\"");

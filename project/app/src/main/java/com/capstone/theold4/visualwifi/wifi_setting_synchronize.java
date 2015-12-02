@@ -29,7 +29,6 @@ public class wifi_setting_synchronize extends Service {
         @Override
         public void run() {
             try{
-                // TODO Database 동기화
                 // 서버에 연결
                 Log.i("[SYNCHRONIZE]", "Connect to server start");
                 final String ServerIP = getResources().getString(R.string.server_ip);

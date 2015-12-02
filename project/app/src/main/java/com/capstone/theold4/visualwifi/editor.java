@@ -281,7 +281,7 @@ public class editor extends AppCompatActivity
             mBitmap = Bitmap.createBitmap(this.getDrawingCache());
             this.setDrawingCacheEnabled(false);
 
-            // TODO 시뮬레이트
+            // TODO 시뮬레이트 쓰레드화 필요
             // 비트맵 전체 크기 계산 및 위도 <-> 디바이스 좌표 변환용 프로젝션 생성
             int width = mBitmap.getWidth();
             int height = mBitmap.getHeight();
@@ -546,16 +546,15 @@ public class editor extends AppCompatActivity
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(false);
         }
-        // TODO
-        // 실제 선정된 기기를 통한 연산 필요
+
+        // 실제 선정된 기기를 통한 연산
         mDrawCanvas.simulate();
         mCurrentMode = mMode.RUN;
     }
     public void onClickExit(View view) {
         IS_MAP_MOVEABLE = false;
         mCurrentMode = mMode.EXIT;
-        // TODO
-        // Activity 전환 필요
+        // Activity 전환
         finish();
     }
 

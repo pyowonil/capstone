@@ -135,7 +135,7 @@ public class visual_wifi_map extends AppCompatActivity
     public boolean onMarkerClick(Marker marker) {
         // TODO 마커 클릭 이벤트 처리
         if(mIsAutoConnection) {
-            // TODO 자동 연결시 필터링 기능
+            // TODO 자동 연결시 필터링 기능, 필요하다면 따로 필터링 플래그를 두는것도 괜찮음
         } else {
             // TODO 수동 연결시 연결 기능
         }
@@ -164,7 +164,7 @@ public class visual_wifi_map extends AppCompatActivity
         if(mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        // TODO
+        // TODO ?
         // if you want to handle your other action bar items...
         return super.onOptionsItemSelected(item);
     }
