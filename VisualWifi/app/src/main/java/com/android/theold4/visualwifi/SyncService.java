@@ -138,10 +138,11 @@ public class SyncService extends Service{
     class RecvDeviceThread extends Thread{
         String line;
         String IP = "165.246.43.250";
-        int PORT = 5555;
+        int PORT = 8888;
+        Socket s;
         public void run(){
             try {
-                Socket s = new Socket(IP, PORT);
+                s = new Socket(IP, PORT);
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream());
                 DataInputStream dis = new DataInputStream(s.getInputStream());
 
@@ -173,6 +174,11 @@ public class SyncService extends Service{
             }
             catch(Exception e){
                 e.printStackTrace();
+                try {
+                    s.close();
+                }
+                catch(Exception ie){}
+
             }
         }
     }

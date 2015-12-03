@@ -73,6 +73,10 @@
     <service android:name=".SyncService"
         android:enabled="true">
     </service>
+    <service android:name=".ComputeAPLocationService"
+        android:enabled="true">
+
+    </service>
 
 </application>
 
