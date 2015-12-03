@@ -66,9 +66,9 @@ public class wifi_information_collector extends Service implements LocationListe
         public void run() {
             try {
                 Log.i("[COLLECTOR]", "Start Service" + mLocation.toString());
-                // 위치 저장
-                double lat = Math.round(mLocation.getLatitude() * 1000d) / 1000d;
-                double lng = Math.round(mLocation.getLongitude() * 1000d) / 1000d;
+                // 위치 저장 // 절삭하면 너무 에러가 많이 남
+                double lat = mLocation.getLatitude();
+                double lng = mLocation.getLongitude();
 
                 // 시간 저장
                 Date now = new Date(System.currentTimeMillis());

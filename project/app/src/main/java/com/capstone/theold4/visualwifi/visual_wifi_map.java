@@ -8,7 +8,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Camera;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
@@ -30,8 +34,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
@@ -56,6 +62,11 @@ public class visual_wifi_map extends AppCompatActivity
     private Intent mInformationCollectorIntent;
     private ComponentName mInformationCollectorName;
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = WIFI Information Collector = = = = = = = = = =
+
+    // = = = = = = = = = = DATABASE MANAGER = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    private database_manager mDatabaseManager;
+    private SQLiteDatabase mDatabaseWrite, mDatabaseRead;
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = DATABASE MANAGER = = = = = = = = = =
 
     // = = = = = = = = = = Permission Request Callback = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     // Request code for location permission request.
@@ -128,14 +139,39 @@ public class visual_wifi_map extends AppCompatActivity
     @Override
     public void onMyLocationChange(Location location) {
         // TODO 위치 변경 이벤트 처리
-        // # 아래 코드 사용 불가 # 와이파이 정보 수집하여 로컬에 저장 -> 화면 전환시 수집 종료됨
-        //        Intent collector = new Intent(visual_wifi_map.this, wifi_information_collector.class);
-        //        collector.putExtra(getResources().getString(R.string.location), location);
-        //        startService(collector);
     }
     @Override
     public void onMapClick(LatLng latLng) {
         // TODO 맵 클릭(짧게) 이벤트 처리
+
+        // TODO WIFI 마커 찍기 --- 다른 적당한 위치에 구현해야 함
+        // 간단하게 구현해봄 (데이터베이스와의 연동을 확인하기 위해서)
+        {
+            mMap.clear();
+            String query = "SELECT * FROM LocalData;";
+            Cursor cursor = mDatabaseRead.rawQuery(query, null);
+            int id_mac, id_latitude, id_longitude, id_ssid, id_rssi, id_date, id_time;
+            id_mac = cursor.getColumnIndex("MAC");
+            id_latitude = cursor.getColumnIndex("Latitude");
+            id_longitude = cursor.getColumnIndex("Longitude");
+            id_ssid = cursor.getColumnIndex("SSID");
+            id_rssi = cursor.getColumnIndex("RSSI");
+            id_date = cursor.getColumnIndex("DATE");
+            id_time = cursor.getColumnIndex("TIME");
+            String data;
+
+            while (cursor.moveToNext()) {
+                data = "" + cursor.getString(id_mac) + " " + cursor.getFloat(id_latitude) + " " + cursor.getFloat(id_longitude) +
+                        " " + cursor.getString(id_ssid) + " " + cursor.getInt(id_rssi) + " " + cursor.getInt(id_date) +
+                        " " + cursor.getInt(id_time);
+                Log.i("[DATALOADING]", data);
+                LatLng latLngData = new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude));
+                CircleOptions circleOptions = new CircleOptions().radius(1).strokeWidth(1).strokeColor(Color.rgb(0, 50, 200)).fillColor(Color.argb(50, 0, 50, 170)).center(latLngData);
+                MarkerOptions markerOptions = new MarkerOptions().visible(true).draggable(false).position(latLngData).title(cursor.getString(id_ssid));
+                mMap.addCircle(circleOptions);
+                mMap.addMarker(markerOptions);
+            }
+        }
     }
     @Override
     public void onMapLongClick(LatLng latLng) {
@@ -299,10 +335,12 @@ public class visual_wifi_map extends AppCompatActivity
         setContentView(R.layout.activity_visual_wifi_map);
 
         // - - - - - - - - - - 변수 복구 및 초기화 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        // 위치 정보
         SharedPreferences pref = getSharedPreferences("SAVE_STATE", 0);
         mInitLocation_latitude = pref.getFloat("mInitLocation_latitude", 37.5f);
         mInitLocation_longitude = pref.getFloat("mInitLocation_longitude", 126.9f);
         mInitLocation_zoom = pref.getFloat("mInitLocation_zoom", 13f);
+        // 서비스 정보
         mIsAutoConnection = false;
         mIsInformationCollection = false;
         mAutoConnectionServiceIntent = null;
@@ -323,6 +361,14 @@ public class visual_wifi_map extends AppCompatActivity
                 breakpoint += 1;
             }
             if(breakpoint >= 2) break;
+        }
+        // 데이터베이스 초기화
+        mDatabaseManager = new database_manager(this);
+        try {
+            mDatabaseWrite = mDatabaseManager.getWritableDatabase();
+            mDatabaseRead = mDatabaseManager.getReadableDatabase();
+        } catch (SQLiteException e) {
+            // TODO 데이터베이스 에러처리 필요
         }
 
         // - - - - - - - - - - Google Map (fragment) 초기화 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
