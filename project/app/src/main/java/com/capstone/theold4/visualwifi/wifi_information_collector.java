@@ -56,18 +56,8 @@ public class wifi_information_collector extends Service implements LocationListe
     private LocationManager mLocationManager;
     private String mNetworkProvider;
     private String mGPSProvider;
-
     // - - - - - - - - - - 파라미터 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    private int mStartId;
     private Location mLocation;
-//    private final Context mContext;
-
-    // = = = = = = = = = = 생성자 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-//    public wifi_information_collector(Context context) {
-//        mContext = context;
-//        onCreate();
-//    }
-    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 생성자 = = = = = = = = = =
 
     // = = = = = = = = = = 서비스 쓰레드 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     private Thread mThread;
@@ -160,7 +150,6 @@ public class wifi_information_collector extends Service implements LocationListe
     // = = = = = = = = = = 서비스 시작 (onStartCommand) = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mStartId = startId;
         // < START_STICKY >
         // 메모리부족이나 기타 상황에서 시스템이 강제로 service를 종료된후
         // service가 재시작될때 null Intent가 담긴 onStartCommand() 콜백함수가 실행된다.
