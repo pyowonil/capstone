@@ -51,6 +51,12 @@ public class visual_wifi_map extends AppCompatActivity
     private ComponentName mAutoConnectionServiceName;
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = WIFI Connection = = = = = = = = = =
 
+    // = = = = = = = = = = WIFI Information Collector = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    private boolean mIsInformationCollection;
+    private Intent mInformationCollectorIntent;
+    private ComponentName mInformationCollectorName;
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = WIFI Information Collector = = = = = = = = = =
+
     // = = = = = = = = = = Permission Request Callback = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     // Request code for location permission request.
     // #onRequestPermissionResult(int, String[], int[])
@@ -122,6 +128,10 @@ public class visual_wifi_map extends AppCompatActivity
     @Override
     public void onMyLocationChange(Location location) {
         // TODO 위치 변경 이벤트 처리
+        // # 아래 코드 사용 불가 # 와이파이 정보 수집하여 로컬에 저장 -> 화면 전환시 수집 종료됨
+        //        Intent collector = new Intent(visual_wifi_map.this, wifi_information_collector.class);
+        //        collector.putExtra(getResources().getString(R.string.location), location);
+        //        startService(collector);
     }
     @Override
     public void onMapClick(LatLng latLng) {
@@ -228,6 +238,28 @@ public class visual_wifi_map extends AppCompatActivity
                 }
             } else if(mSelectedItem == getResources().getString(R.string.back)) {
                 setDrawerListItems();
+            } else if(mSelectedItem == getResources().getString(R.string.wifi_collector_run)) {
+                mIsInformationCollection = true;
+                mDrawerLayout.closeDrawer(mDrawerList); // closed
+                setDrawerListItems();
+                // - - - - - - - - - - WIFI 정보 수집 서비스 시작 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                mInformationCollectorIntent = new Intent(visual_wifi_map.this, wifi_information_collector.class);
+                mInformationCollectorName = startService(mInformationCollectorIntent);
+            } else if(mSelectedItem == getResources().getString(R.string.wifi_collector_stop)) {
+                mIsInformationCollection = false;
+                mDrawerLayout.closeDrawer(mDrawerList); // closed
+                setDrawerListItems();
+                // - - - - - - - - - - WIFI 정보 수집 서비스 종료 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                try {
+                    if(mInformationCollectorIntent == null) {
+                        Class serviceClass = Class.forName(mInformationCollectorName.getClassName());
+                        stopService(new Intent(visual_wifi_map.this, serviceClass));
+                    } else {
+                        stopService(mInformationCollectorIntent);
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -242,6 +274,11 @@ public class visual_wifi_map extends AppCompatActivity
                 mDrawerListItems.add(getResources().getString(R.string.wifi_manual));
             } else {
                 mDrawerListItems.add(getResources().getString(R.string.wifi_auto));
+            }
+            if(mIsInformationCollection) {
+                mDrawerListItems.add(getResources().getString(R.string.wifi_collector_stop));
+            } else {
+                mDrawerListItems.add(getResources().getString(R.string.wifi_collector_run));
             }
             mDrawerListItems.add(getResources().getString(R.string.back));
         } else {
@@ -267,18 +304,25 @@ public class visual_wifi_map extends AppCompatActivity
         mInitLocation_longitude = pref.getFloat("mInitLocation_longitude", 126.9f);
         mInitLocation_zoom = pref.getFloat("mInitLocation_zoom", 13f);
         mIsAutoConnection = false;
+        mIsInformationCollection = false;
         mAutoConnectionServiceIntent = null;
+        mInformationCollectorIntent = null;
         ActivityManager activityManager = (ActivityManager)getSystemService(Activity.ACTIVITY_SERVICE);
+        int breakpoint = 0;
         for(ActivityManager.RunningServiceInfo service : activityManager.getRunningServices(Integer.MAX_VALUE)) {
             Log.i("[SERVICE]", service.service.getClassName());
             if("com.capstone.theold4.visualwifi.wifi_connection_auto".equals(service.service.getClassName())) {
-                Log.i("[INFO]", "find service");
-                final String WIFI_CONNECTION_AUTO = "com.capstone.theold4.visualwifi.wifi_connection_auto";
+                Log.i("[INFO]", "find auto connection service");
                 mAutoConnectionServiceName = service.service;
-                //mAutoConnectionServiceIntent = ((Intent) getSystemService(WIFI_CONNECTION_AUTO));
                 mIsAutoConnection = true;
-                break;
+                breakpoint += 1;
+            } else if("com.capstone.theold4.visualwifi.wifi_information_collector".equals(service.service.getClassName())) {
+                Log.i("[INFO]", "find collection service");
+                mInformationCollectorName = service.service;
+                mIsInformationCollection = true;
+                breakpoint += 1;
             }
+            if(breakpoint >= 2) break;
         }
 
         // - - - - - - - - - - Google Map (fragment) 초기화 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -315,6 +359,14 @@ public class visual_wifi_map extends AppCompatActivity
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
         setDrawerListItems(); // this method must be run after settings
+
+        // - - - - - - - - - - Information Collector 시작 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        // TODO 이전상태 기억하여 서비스 종료시 자동 시작이 안되게끔 해야한다.
+        if(!mIsInformationCollection) {
+            mInformationCollectorIntent = new Intent(visual_wifi_map.this, wifi_information_collector.class);
+            mInformationCollectorName = startService(mInformationCollectorIntent);
+            mIsInformationCollection = true;
+        }
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 액티비티 시작 (onCreate) = = = = = = = = = =
 

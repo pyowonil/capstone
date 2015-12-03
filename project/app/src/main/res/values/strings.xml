@@ -4,7 +4,8 @@
 
     <!-- Intent Pass Parameter Key Strings -->
     <!-- 현재 지도에서의 위치를 새로운 엑티비티로 넘길때 사용하는 키워드 -->
-    <string name="position">position</string>
+    <string name="position">position</string> <!-- 카메라 포지션 -->
+    <string name="location">location</string> <!-- 위도 & 경도 -->
 
     <!-- Drawer List Items Strings -->
     <string name="back">뒤로가기</string>
@@ -15,6 +16,8 @@
         <string name="wifi_upload">업로드</string>
         <string name="wifi_auto">자동설정</string>
         <string name="wifi_manual">수동설정</string>
+        <string name="wifi_collector_run">데이터 수집</string>
+        <string name="wifi_collector_stop">데이터 수집 종료</string>
     <!-- Level 1 -->
     <string name="filtering">필터링</string>
     <string name="editor">에디터</string>
