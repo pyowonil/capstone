@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -79,7 +80,9 @@ public class editor extends AppCompatActivity
     private mMode mCurrentMode = mMode.DEFAULT;
 
     private ListView mDeviceListView;
-    private ArrayList<String> mDeviceList;
+    private ArrayList<CVData> mDeviceList;
+    private DataAdapter mAdapter = null;
+    private int mDeviceNum = -1;
 
     // 원을 관리하는 클래스
     private class DraggableCircle {
@@ -90,10 +93,29 @@ public class editor extends AppCompatActivity
         private final Marker radiusMarker;
         private final Circle circle;
         private double radius;
+        private Bitmap icon;
+        private int iconSize = 100;
 
         public DraggableCircle(LatLng center, double radius) {
+            if(mDeviceNum == 0){
+                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device01);
+                icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
+            }else if(mDeviceNum == 1){
+                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device02);
+                icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
+            }else if(mDeviceNum == 2){
+                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device03);
+                icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
+            }else if(mDeviceNum == 3){
+                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device04);
+                icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
+            }else if(mDeviceNum == 4){
+                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device05);
+                icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
+            }
+
             this.radius = radius;
-            centerMarker = mMap.addMarker(new MarkerOptions().position(center).draggable(true));
+            centerMarker = mMap.addMarker(new MarkerOptions().position(center).draggable(true).icon(BitmapDescriptorFactory.fromBitmap(icon)));
             radiusMarker = mMap.addMarker(new MarkerOptions().position(toRadiusLatLng(center, radius)).draggable(true).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
             centerMarker.setTitle(Double.toString(radius));
             circle = mMap.addCircle(new CircleOptions().center(center).radius(radius).strokeWidth(WIDTH).strokeColor(Color.BLACK).fillColor(Color.HSVToColor(ALPHA, new float[]{HUE, 1, 1})));
@@ -178,17 +200,28 @@ public class editor extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         mDeviceListView = (ListView)findViewById(R.id.deviceListView);
-        mDeviceList = new ArrayList<String>();
-        mDeviceList.add("Device1 10m");
-        mDeviceList.add("Device2 15m");
-        mDeviceList.add("Device3 20m");
-        mDeviceList.add("Device4 25m");
-        ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, mDeviceList);
-        mDeviceListView.setAdapter(adapter);
+        mDeviceList = new ArrayList<CVData>();//객체 생성
+        mAdapter = new DataAdapter(this, mDeviceList);//데이터를 받기위한 데이터어댑터 객체
+        mDeviceListView.setAdapter(mAdapter); //리스트뷰에 어댑터 연결
+        mDeviceListView.setBackgroundColor(Color.WHITE);
+
+        // CVData클래스를 만들 때 순서대로 해당 인수값을 입력
+        mAdapter.add(new CVData(getApplicationContext(), "Device01",
+                "EFM ipTIME A3004-dual 유무선공유기", R.drawable.device01));
+        mAdapter.add(new CVData(getApplicationContext(), "Device02",
+                "TP-LINK Archer C7 AC1750 유무선공유기", R.drawable.device02));
+        mAdapter.add(new CVData(getApplicationContext(), "Device03",
+                "ASUS RT-AC68U 유무선공유기", R.drawable.device03));
+        mAdapter.add(new CVData(getApplicationContext(), "Device04",
+                "D-Link DIR-850L 유무선공유기", R.drawable.device04));
+        mAdapter.add(new CVData(getApplicationContext(), "Device05",
+                "TP-LINK Archer C2 AC750 유무선공유기", R.drawable.device05));
+
         mDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mDeviceRange = 10 + 5 * position;
+                mDeviceNum = position;
+                mDeviceRange = 10;
                 mDeviceListView.setVisibility(View.INVISIBLE);
             }
         });

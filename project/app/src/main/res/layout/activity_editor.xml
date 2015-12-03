@@ -24,6 +24,13 @@
             android:id="@+id/draw_map"
             android:layout_alignBottom="@+id/linearLayout">
 
+            <ListView
+                android:layout_width="339dp"
+                android:layout_height="413dp"
+                android:id="@+id/deviceListView"
+                android:layout_gravity="center"
+                android:layout_alignBottom="@+id/draw_map"
+                android:listSelector="@drawable/list_selector"/>
         </FrameLayout>
 
         <LinearLayout
@@ -89,13 +96,6 @@
                 android:layout_weight="1" />
 
         </LinearLayout>
-
-        <ListView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/deviceListView"
-            android:layout_gravity="center"
-            android:layout_alignBottom="@+id/draw_map" />
 
     </RelativeLayout>
 
