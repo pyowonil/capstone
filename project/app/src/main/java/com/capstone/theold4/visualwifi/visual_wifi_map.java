@@ -166,10 +166,10 @@ public class visual_wifi_map extends AppCompatActivity
                         " " + cursor.getInt(id_time);
                 Log.i("[DATALOADING]", data);
                 LatLng latLngData = new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude));
-                CircleOptions circleOptions = new CircleOptions().radius(1).strokeWidth(1).strokeColor(Color.rgb(0, 50, 200)).fillColor(Color.argb(50, 0, 50, 170)).center(latLngData);
+                CircleOptions circleOptions = new CircleOptions().radius(1).strokeWidth(1).strokeColor(Color.argb(150, 0, 50, 200)).fillColor(Color.argb(150, 0, 50, 170)).center(latLngData);
                 MarkerOptions markerOptions = new MarkerOptions().visible(true).draggable(false).position(latLngData).title(cursor.getString(id_ssid));
                 mMap.addCircle(circleOptions);
-                mMap.addMarker(markerOptions);
+                //mMap.addMarker(markerOptions);
             }
         }
     }

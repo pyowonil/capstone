@@ -110,6 +110,7 @@ public class wifi_information_collector extends Service implements LocationListe
     // = = = = = = = = = = 액티비티 시작 (onCreate) = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     public void onCreate() {
         super.onCreate();
+        Log.i("[WIFI_INFORMATION_COLLECTOR]", "start collecting");
         // 와이파이 관련 변수들
         mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         final IntentFilter filter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -170,6 +171,7 @@ public class wifi_information_collector extends Service implements LocationListe
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.i("[WIFI_INFORMATION_COLLECTOR]", "end collecting");
         try {
             mLocationManager.removeUpdates(this);
             mLocationManager.removeUpdates(this);
