@@ -44,24 +44,30 @@ public class WifiSettingActivity extends AppCompatActivity implements View.OnCli
         });
 
         buttonUpload.setOnClickListener(new View.OnClickListener(){
-            public void onClick(View v){       // 업로드 -> (LocalDevice) 업로드  리스트에서 1개씩만 선택해서 가능  // SQLite , 서버 통신
+            public void onClick(View v){       // 업로드 버튼 -> (LocalDevice) 업로드  리스트에서 1개씩만 선택해서 가능  // SQLite , 서버 통신
 
-                DBManager helper = new DBManager(getApplicationContext());;
+                DBManager helper = new DBManager(getApplicationContext());
                 SQLiteDatabase db_r;
                 db_r = helper.getReadableDatabase();
 
-                String sql = "SELECT * FROM WifiData;";
-                Cursor c = db_r.rawQuery(sql, null);
-                while(c.moveToNext()){
-                    String mac = c.getString( c.getColumnIndex("MAC"));
-                    float lat = c.getFloat(c.getColumnIndex("Latitude"));
-                    float lon = c.getFloat(c.getColumnIndex("Longitude"));
-                    String ssid = c.getString(c.getColumnIndex("SSID"));
-                    int rssi = c.getInt(c.getColumnIndex("RSSI"));
-                    int date = c.getInt(c.getColumnIndex("DATE"));
-                    int time = c.getInt(c.getColumnIndex("TIME"));
+                Log.i("Dev", "button clicked");
+                String sql = "SELECT * FROM LocalDevice;";
+                try {
+                    Cursor c = db_r.rawQuery(sql, null);
+                    while (c.moveToNext()) {
+                        String mac = c.getString(c.getColumnIndex("MAC"));
+                        float lat = c.getFloat(c.getColumnIndex("Latitude"));
+                        float lon = c.getFloat(c.getColumnIndex("Longitude"));
+                        String ssid = c.getString(c.getColumnIndex("SSID"));
+                        String pw = c.getString(c.getColumnIndex("PW"));
+                        int date = c.getInt(c.getColumnIndex("DATE"));
+                        int time = c.getInt(c.getColumnIndex("TIME"));
 
-                    Log.i("db",""+mac+" "+lat+" "+lon+" "+ssid+" "+rssi+" "+date+" "+time);
+                        Log.i("db", "" + mac + " " + lat + " " + lon + " " + ssid + " " + pw + " " + date + " " + time);
+                    }
+                }
+                catch(SQLiteException sqlE){
+                    sqlE.printStackTrace();
                 }
 
                 finish();
@@ -94,7 +100,8 @@ public class WifiSettingActivity extends AppCompatActivity implements View.OnCli
 
         buttonWifiList.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){  // Wifi 수동연결일때 현재 연결가능한 Wifi 리스트 보여줌 // DB에 pw저장되있는 wifi를 우선순위 높게 리스트상단으로
-
+                Intent intentService = new Intent(WifiSettingActivity.this, ComputeAPLocationService.class);
+                startService(intentService);
             }
         });
 

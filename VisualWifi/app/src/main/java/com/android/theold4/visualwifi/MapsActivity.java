@@ -70,7 +70,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
 
 
-        Intent intentService = new Intent(this, ComputeAPLocationService.class);
+
         InitGoogleMap(); // 구글맵 초기화
         InitSideMenu();  // 사이드메뉴 및 토글버튼 초기화
     }
