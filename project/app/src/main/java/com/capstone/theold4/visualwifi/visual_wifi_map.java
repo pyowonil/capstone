@@ -3,8 +3,13 @@ package com.capstone.theold4.visualwifi;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -14,6 +19,8 @@ import android.database.sqlite.SQLiteException;
 import android.graphics.Camera;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -27,6 +34,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -40,6 +48,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class visual_wifi_map extends AppCompatActivity
     implements
@@ -52,9 +63,148 @@ public class visual_wifi_map extends AppCompatActivity
         ActivityCompat.OnRequestPermissionsResultCallback // Permission Request Callback 기능
 {
     // = = = = = = = = = = WIFI Connection = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    // - - - - - - - - - - WIFI AUTO SERVICE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     private boolean mIsAutoConnection;
     private Intent mAutoConnectionServiceIntent;
     private ComponentName mAutoConnectionServiceName;
+    // - - - - - - - - - - WIFI MANUAL OPERATION - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    private WifiManager mWifiManager;
+    private List<ScanResult> mScanResult;
+    private String mSelectedSSID, mSelectedCapability;
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if(action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+                // TODO 와이파이 스캔 결과 얻기
+                mWifiManager.startScan();
+            } else if(action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+                // TODO 와이파이 ... 이거 필요한가?
+            }
+        }
+    };
+    // 정렬 알고리즘
+    private class ScanResultComparator implements Comparator<ScanResult> {
+        @Override
+        public int compare(ScanResult lhs, ScanResult rhs) {
+            return rhs.level - lhs.level;
+        }
+    }
+    private Comparator<ScanResult> mScanResultComparator = new ScanResultComparator();
+    private void alertWifiManualList() {
+        mScanResult = mWifiManager.getScanResults();
+        Collections.sort(mScanResult, mScanResultComparator);
+        // TODO SSID 중복 처리 및 오픈 상태의 와이파이(비밀번호가 필요하지 않은)에 대한 로그인창 처리 필요
+        // TODO (!) 표시도 필요할듯
+        final String[] scanResult = new String[mScanResult.size()];
+        {
+            int size = mScanResult.size();
+            for (int i = 0; i < size; i++) {
+                ScanResult scanresult = mScanResult.get(i);
+                scanResult[i] = scanresult.SSID;
+            }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(visual_wifi_map.this);
+        builder.setTitle(getResources().getString(R.string.wifi_manual_list_title));
+        builder.setItems(scanResult, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mSelectedSSID = mScanResult.get(which).SSID;
+                mSelectedCapability = mScanResult.get(which).capabilities;
+                dialog.dismiss();
+                if(mSelectedCapability.contains("OPEN") || mSelectedCapability.contains("ESS")) {
+                    Log.i("[WIFI_MANAUAL]", "try connect ssid=" + mSelectedSSID + " capability=" + mSelectedCapability);
+                    connect(mSelectedSSID, "", mSelectedCapability);
+                } else {
+                    alertWifiLogin();
+                }
+            }
+        });
+        builder.show();
+    }
+    private void alertWifiLogin() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(visual_wifi_map.this);
+        final View loginView = getLayoutInflater().inflate(R.layout.alert_wifi_login, null);
+        builder.setView(loginView);
+        builder.setTitle(getResources().getString(R.string.wifi_manual_login_title));
+        builder.setPositiveButton(getResources().getString(R.string.wifi_manual_login_button_ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText edit_password = (EditText) loginView.findViewById(R.id.password);
+                String password = edit_password.getText().toString();
+                Log.i("[WIFI_MANAUAL]", "try connect ssid=" + mSelectedSSID + " password=" + password + " capability=" + mSelectedCapability);
+                connect(mSelectedSSID, password, mSelectedCapability);
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.wifi_manual_login_button_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
+    public boolean connect(String SSID, String password, String capability) {
+        // TODO 자세한 메커니즘 확인 필요
+        boolean success = false;
+        WifiConfiguration wfc = new WifiConfiguration();
+
+        wfc.SSID = "\"".concat( SSID ).concat("\"");
+        wfc.status = WifiConfiguration.Status.ENABLED;
+        wfc.priority = 40;
+
+        if(capability.contains("WEP") == true ){
+            wfc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+            wfc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            wfc.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            wfc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+            wfc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
+            wfc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+            wfc.wepKeys[0] = "\"".concat(password).concat("\"");
+            wfc.wepTxKeyIndex = 0;
+        }else if(capability.contains("WPA") == true ) {
+            wfc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+            wfc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            wfc.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            wfc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            wfc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            wfc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+            wfc.preSharedKey = "\"".concat(password).concat("\"");
+        }else if(capability.contains("WPA2") == true ) {
+            wfc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
+            wfc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            wfc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            wfc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            wfc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+            wfc.preSharedKey = "\"".concat(password).concat("\"");
+        }else if(capability.contains("OPEN") == true || capability.contains("ESS")) {
+            wfc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+            wfc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            wfc.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+            wfc.allowedAuthAlgorithms.clear();
+            wfc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+            wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+        }
+
+        int networkId = mWifiManager.addNetwork(wfc);
+        if(networkId != -1) {
+            success = mWifiManager.enableNetwork(networkId, true);
+        }
+
+        return success;
+    }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = WIFI Connection = = = = = = = = = =
 
     // = = = = = = = = = = WIFI Information Collector = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -272,6 +422,8 @@ public class visual_wifi_map extends AppCompatActivity
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
+                // - - - - - - - - - - WIFI 수동연결 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                alertWifiManualList();
             } else if(mSelectedItem == getResources().getString(R.string.back)) {
                 setDrawerListItems();
             } else if(mSelectedItem == getResources().getString(R.string.wifi_collector_run)) {
@@ -413,6 +565,13 @@ public class visual_wifi_map extends AppCompatActivity
             mInformationCollectorName = startService(mInformationCollectorIntent);
             mIsInformationCollection = true;
         }
+
+        // - - - - - - - - - - 와이파이 수동연결 변수 초기화 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        mWifiManager = (WifiManager)getSystemService(WIFI_SERVICE);
+        final IntentFilter filter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        registerReceiver(mReceiver, filter);
+        mWifiManager.startScan();
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 액티비티 시작 (onCreate) = = = = = = = = = =
 

@@ -199,7 +199,7 @@ public class wifi_connection_auto extends Service {
             wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
             wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
             wfc.preSharedKey = "\"".concat(password).concat("\"");
-        }else if(capability.contains("OPEN") == true ) {
+        }else if(capability.contains("OPEN") == true ||capability.contains("ESS")) {
             wfc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
             wfc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
             wfc.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
