@@ -88,7 +88,7 @@ public class SyncService extends Service{
                     date = c.getInt(c.getColumnIndex("DATE"));
                     time = c.getInt(c.getColumnIndex("TIME"));
 
-                    dos.writeUTF("" + mac + " " + lat + " " + lon + " " + ssid + " " + rssi + " " + date + " " + time);
+                    dos.writeUTF("" + mac + ", " + lat + ", " + lon + ", " + ssid + ", " + rssi + ", " + date + ", " + time);
                 }
                 db_r.execSQL("delete from LocalData;");
             } catch (Exception e) {
@@ -112,7 +112,7 @@ public class SyncService extends Service{
                     }catch(IOException ioe){
                         break;
                     }
-                    StringTokenizer st = new StringTokenizer(line, " ");
+                    StringTokenizer st = new StringTokenizer(line, ", ");
 
                     String _mac = st.nextToken();
                     String _lat = st.nextToken();
@@ -154,7 +154,7 @@ public class SyncService extends Service{
                         break;
                     }
 
-                    StringTokenizer st = new StringTokenizer(line, " ");
+                    StringTokenizer st = new StringTokenizer(line, ", ");
 
                     String _mac = st.nextToken();
                     String _lat = st.nextToken();
