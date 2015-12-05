@@ -42,6 +42,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -113,7 +114,7 @@ public class visual_wifi_map extends AppCompatActivity
                 mSelectedSSID = mScanResult.get(which).SSID;
                 mSelectedCapability = mScanResult.get(which).capabilities;
                 dialog.dismiss();
-                if(mSelectedCapability.contains("OPEN") || mSelectedCapability.equals("[ESS]")) {
+                if (mSelectedCapability.contains("OPEN") || mSelectedCapability.equals("[ESS]")) {
                     Log.i("[WIFI_MANAUAL]", "try connect ssid=" + mSelectedSSID + " capability=" + mSelectedCapability);
                     connect(mSelectedSSID, "", mSelectedCapability);
                 } else {
@@ -340,6 +341,53 @@ public class visual_wifi_map extends AppCompatActivity
         return true;
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Google Map API = = = = = = = = = =
+
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Google Map API = = = = = = = = = =
+    class SignalInfo{
+        private String ssid;
+        private String MACAddress;
+        private LatLng APPoint;
+        private Circle APRange;
+        private List<Circle> signalPoints;
+        private GoogleMap map;
+
+        public SignalInfo(GoogleMap map){
+            this.map = map;
+            signalPoints = new ArrayList<>();
+        }
+
+        public void setSSID(String ssid){
+            this.ssid = ssid;
+        }
+
+        public void setMACAddress(String mac){
+            this.MACAddress = mac;
+        }
+
+        public void setAPPoint(LatLng center){
+            this.APPoint = center;
+        }
+
+        public void setVisible(boolean visible){
+            APRange.setVisible(visible);
+
+            for(Circle circle : signalPoints){
+                circle.setVisible(visible);
+            }
+        }
+
+        public void drawCircle(){
+//            this.APRange = map.addCircle(new CircleOptions()
+//                    .radius(10).strokeWidth(1).strokeColor(Color.argb(100,200,100,100)).fillColor(Color.argb(100,200,100,100))
+//                    .center(center).visible(true));
+        }
+
+        public void drawSignal(){
+
+        }
+    }
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Google Map API = = = = = = = = = =
+
 
     // = = = = = = = = = = 사이드 메뉴 (DrawerLayout) = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     private DrawerLayout mDrawerLayout;

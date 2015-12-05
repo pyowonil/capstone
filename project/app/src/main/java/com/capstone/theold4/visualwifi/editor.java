@@ -112,6 +112,15 @@ public class editor extends AppCompatActivity
             }else if(mDeviceNum == 4){
                 icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device05);
                 icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
+            }else if(mDeviceNum == 5){
+                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device06);
+                icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
+            }else if(mDeviceNum == 6){
+                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device07);
+                icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
+            }else if(mDeviceNum == 7){
+                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.device08);
+                icon = Bitmap.createScaledBitmap(icon, iconSize, iconSize, false);
             }
 
             this.radius = radius;
@@ -206,16 +215,22 @@ public class editor extends AppCompatActivity
         mDeviceListView.setBackgroundColor(Color.WHITE);
 
         // CVData클래스를 만들 때 순서대로 해당 인수값을 입력
-        mAdapter.add(new CVData(getApplicationContext(), "Device01",
-                "EFM ipTIME A3004-dual 유무선공유기", R.drawable.device01));
-        mAdapter.add(new CVData(getApplicationContext(), "Device02",
-                "TP-LINK Archer C7 AC1750 유무선공유기", R.drawable.device02));
-        mAdapter.add(new CVData(getApplicationContext(), "Device03",
-                "ASUS RT-AC68U 유무선공유기", R.drawable.device03));
-        mAdapter.add(new CVData(getApplicationContext(), "Device04",
-                "D-Link DIR-850L 유무선공유기", R.drawable.device04));
-        mAdapter.add(new CVData(getApplicationContext(), "Device05",
-                "TP-LINK Archer C2 AC750 유무선공유기", R.drawable.device05));
+        mAdapter.add(new CVData(getApplicationContext(), getResources().getString(R.string.device01_name),
+                getResources().getString(R.string.device01_detail), R.drawable.device01));
+        mAdapter.add(new CVData(getApplicationContext(), getResources().getString(R.string.device02_name),
+                getResources().getString(R.string.device02_detail), R.drawable.device02));
+        mAdapter.add(new CVData(getApplicationContext(), getResources().getString(R.string.device03_name),
+                getResources().getString(R.string.device03_detail), R.drawable.device03));
+        mAdapter.add(new CVData(getApplicationContext(), getResources().getString(R.string.device04_name),
+                getResources().getString(R.string.device04_detail), R.drawable.device04));
+        mAdapter.add(new CVData(getApplicationContext(), getResources().getString(R.string.device05_name),
+                getResources().getString(R.string.device05_detail), R.drawable.device05));
+        mAdapter.add(new CVData(getApplicationContext(), getResources().getString(R.string.device06_name),
+                getResources().getString(R.string.device06_detail), R.drawable.device06));
+        mAdapter.add(new CVData(getApplicationContext(), getResources().getString(R.string.device07_name),
+                getResources().getString(R.string.device07_detail), R.drawable.device07));
+        mAdapter.add(new CVData(getApplicationContext(), getResources().getString(R.string.device08_name),
+                getResources().getString(R.string.device08_detail), R.drawable.device08));
 
         mDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -528,6 +543,9 @@ public class editor extends AppCompatActivity
     @Override
     public void onMapClick(LatLng latLng) {
         Point point = mMap.getProjection().toScreenLocation(latLng);
+        if(mDeviceListView.isShown()){
+            mDeviceListView.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override

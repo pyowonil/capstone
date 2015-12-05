@@ -5,6 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
@@ -47,12 +50,17 @@ public class wifi_connection_auto extends Service {
     }
     private Comparator<ScanResult> mScanResultComparator = new ScanResultComparator();
 
+    // 데이터베이스
+    private database_manager mDatabaseManager;
+    private SQLiteDatabase mDatabaseRead;
+
     // = = = = = = = = = = 서비스 쓰레드 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     private Thread mThread;
     private Runnable mRun = new Runnable() {
         @Override
         public void run() {
             try{
+                String beforeConnectedSSID = null;
                 while(!Thread.currentThread().isInterrupted()) {
                     // 와이파이 자동 연결 시도
                     if(!mIsConnection) {
@@ -60,10 +68,28 @@ public class wifi_connection_auto extends Service {
                         Collections.sort(mScanResult, mScanResultComparator);
                         for (ScanResult scan : mScanResult) {
                             String SSID = scan.SSID;
+                            if(SSID.equals(beforeConnectedSSID)) {
+                                beforeConnectedSSID = null;
+                                continue;
+                            }
                             // TODO 패스워드 매커니즘 필요
-                            String password = "4567253885844163";
+                            String password = "";
+                            {
+                                String query = "SELECT SSID, PW FROM LocalDevice UNION SELECT SSID, PW FROM WifiDevice;";
+                                Cursor cursor = mDatabaseRead.rawQuery(query, null);
+                                int id_ssid = cursor.getColumnIndex("SSID");
+                                int id_pw = cursor.getColumnIndex("PW");
+                                while(cursor.moveToNext()) {
+                                    Log.i("[DATABASE]", cursor.getString(cursor.getColumnIndex("SSID")) + " " + cursor.getString(cursor.getColumnIndex("PW")));
+                                    if(SSID.equals(cursor.getString(id_ssid)) && cursor.getString(id_pw).length() > 1) {
+                                        password = cursor.getString(id_pw);
+                                        Log.i("[WIFI]", "Found password : " + password);
+                                        break;
+                                    }
+                                }
+                            }
                             String capability = scan.capabilities;
-                            Log.i("[WIFI]", SSID + " " + capability);
+                            Log.i("[WIFI]", SSID + " " + password + " " + capability);
                             if (connect(SSID, password, capability)) {
                                 Thread.sleep(1500);
                                 NetworkInfo.State wifistate = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
@@ -73,6 +99,7 @@ public class wifi_connection_auto extends Service {
                                 }
                                 if(wifistate == NetworkInfo.State.CONNECTING || wifistate == NetworkInfo.State.CONNECTED) {
                                     Log.i("[WIFI]", "Connect");
+                                    beforeConnectedSSID = SSID;
                                     mIsConnection = true;
                                     Thread.sleep(10000);
                                     break;
@@ -112,6 +139,13 @@ public class wifi_connection_auto extends Service {
         registerReceiver(mReceiver, filter);
         mWifiManager.startScan();
         mConnectivityManager = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        // 데이터베이스 변수들 초기화
+        mDatabaseManager = new database_manager(this);
+        try {
+            mDatabaseRead = mDatabaseManager.getReadableDatabase();
+        } catch (SQLiteException e) {
+            // TODO 데이터베이스 에러처리 필요
+        }
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 액티비티 시작 (onCreate) = = = = = = = = = =
 
