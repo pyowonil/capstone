@@ -14,7 +14,8 @@
         <!-- Level 2 -->
         <string name="wifi_synchronize">동기화</string>
         <string name="wifi_upload">업로드</string>
-        <string name="wifi_auto">자동설정</string>
+        <string name="wifi_auto">자동설정 ON</string>
+        <string name="wifi_auto_off">자동설정 OFF</string>
         <string name="wifi_manual">수동설정</string>
         <string name="wifi_collector_run">데이터 수집</string>
         <string name="wifi_collector_stop">데이터 수집 종료</string>

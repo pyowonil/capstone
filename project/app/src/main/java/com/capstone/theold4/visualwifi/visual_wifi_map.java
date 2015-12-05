@@ -113,7 +113,7 @@ public class visual_wifi_map extends AppCompatActivity
                 mSelectedSSID = mScanResult.get(which).SSID;
                 mSelectedCapability = mScanResult.get(which).capabilities;
                 dialog.dismiss();
-                if(mSelectedCapability.contains("OPEN") || mSelectedCapability.contains("ESS")) {
+                if(mSelectedCapability.contains("OPEN") || mSelectedCapability.equals("[ESS]")) {
                     Log.i("[WIFI_MANAUAL]", "try connect ssid=" + mSelectedSSID + " capability=" + mSelectedCapability);
                     connect(mSelectedSSID, "", mSelectedCapability);
                 } else {
@@ -315,11 +315,13 @@ public class visual_wifi_map extends AppCompatActivity
                         " " + cursor.getString(id_ssid) + " " + cursor.getInt(id_rssi) + " " + cursor.getInt(id_date) +
                         " " + cursor.getInt(id_time);
                 Log.i("[DATALOADING]", data);
-                LatLng latLngData = new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude));
-                CircleOptions circleOptions = new CircleOptions().radius(1).strokeWidth(1).strokeColor(Color.argb(150, 0, 50, 200)).fillColor(Color.argb(150, 0, 50, 170)).center(latLngData);
-                MarkerOptions markerOptions = new MarkerOptions().visible(true).draggable(false).position(latLngData).title(cursor.getString(id_ssid));
-                mMap.addCircle(circleOptions);
-                //mMap.addMarker(markerOptions);
+                if(cursor.getString(id_ssid).equals("INHA-WLAN2") ||cursor.getString(id_ssid).equals("INHA-Guest") ) {
+                    LatLng latLngData = new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude));
+                    CircleOptions circleOptions = new CircleOptions().radius(1).strokeWidth(1).strokeColor(Color.argb(150, 0, 50, 200)).fillColor(Color.argb(150, 0, 50, 170)).center(latLngData);
+                    MarkerOptions markerOptions = new MarkerOptions().visible(true).draggable(false).position(latLngData).title(cursor.getString(id_ssid));
+                    mMap.addCircle(circleOptions);
+                    //mMap.addMarker(markerOptions);
+                }
             }
         }
     }
@@ -407,7 +409,7 @@ public class visual_wifi_map extends AppCompatActivity
                 // - - - - - - - - - - WIFI 자동연결 서비스 시작 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 mAutoConnectionServiceIntent = new Intent(visual_wifi_map.this, wifi_connection_auto.class);
                 mAutoConnectionServiceName = startService(mAutoConnectionServiceIntent);
-            } else if(mSelectedItem == getResources().getString(R.string.wifi_manual)) {
+            } else if(mSelectedItem == getResources().getString(R.string.wifi_auto_off)) {
                 mIsAutoConnection = false;
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
                 setDrawerListItems();
@@ -422,7 +424,25 @@ public class visual_wifi_map extends AppCompatActivity
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
+            } else if(mSelectedItem == getResources().getString(R.string.wifi_manual)) {
+                mDrawerLayout.closeDrawer(mDrawerList); // closed
+                // - - - - - - - - - - WIFI 자동연결 서비스 종료 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                try {
+                    if(mIsAutoConnection) {
+                        if (mAutoConnectionServiceIntent == null) {
+                            Class serviceClass = Class.forName(mAutoConnectionServiceName.getClassName());
+                            stopService(new Intent(visual_wifi_map.this, serviceClass));
+                        } else {
+                            stopService(mAutoConnectionServiceIntent);
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    mIsAutoConnection = false;
+                }
                 // - - - - - - - - - - WIFI 수동연결 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                setDrawerListItems();
                 alertWifiManualList();
             } else if(mSelectedItem == getResources().getString(R.string.back)) {
                 setDrawerListItems();
@@ -459,10 +479,11 @@ public class visual_wifi_map extends AppCompatActivity
             mDrawerListItems.add(getResources().getString(R.string.wifi_synchronize));
             mDrawerListItems.add(getResources().getString(R.string.wifi_upload));
             if(mIsAutoConnection) {
-                mDrawerListItems.add(getResources().getString(R.string.wifi_manual));
+                mDrawerListItems.add(getResources().getString(R.string.wifi_auto_off));
             } else {
                 mDrawerListItems.add(getResources().getString(R.string.wifi_auto));
             }
+            mDrawerListItems.add(getResources().getString(R.string.wifi_manual));
             if(mIsInformationCollection) {
                 mDrawerListItems.add(getResources().getString(R.string.wifi_collector_stop));
             } else {
@@ -590,43 +611,5 @@ public class visual_wifi_map extends AppCompatActivity
         edit.putFloat("mInitLocation_zoom", mInitLocation_zoom);
         edit.commit();
     }
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//        Log.i("[STOP]", "------------------------------------");
-//        SharedPreferences pref = getSharedPreferences("SAVE_STATE", 0);
-//        SharedPreferences.Editor edit = pref.edit();
-//        LatLng position = mMap.getCameraPosition().target;
-//        mInitLocation_latitude = (float) position.latitude;
-//        mInitLocation_longitude = (float) position.longitude;
-//        edit.putFloat("mInitLocation_latitude", mInitLocation_latitude);
-//        edit.putFloat("mInitLocation_longitude", mInitLocation_longitude);
-//        edit.putFloat("mInitLocation_zoom", mInitLocation_zoom);
-//        edit.commit();
-//    }
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        Log.i("[RESUME]","------------------------------------");
-//        SharedPreferences pref = getSharedPreferences("SAVE_STATE", 0);
-//        mInitLocation_latitude = pref.getFloat("mInitLocation_latitude", 37.5f);
-//        mInitLocation_longitude = pref.getFloat("mInitLocation_longitude", 126.9f);
-//        mInitLocation_zoom = pref.getFloat("mInitLocation_zoom", 13f);
-//        mIsAutoConnection = false;
-//        ActivityManager activityManager = (ActivityManager)getSystemService(Activity.ACTIVITY_SERVICE);
-//        for(ActivityManager.RunningServiceInfo service : activityManager.getRunningServices(Integer.MAX_VALUE)) {
-//            Log.i("[SERVICE]", service.service.getClassName());
-//            if("com.capstone.theold4.visualwifi.wifi_connection_auto".equals(service.service.getClassName())) {
-//                Log.i("[INFO]", "find service");
-//                final String WIFI_CONNECTION_AUTO = "com.capstone.theold4.visualwifi.wifi_connection_auto";
-//                mAutoConnectionServiceIntent = (Intent) getSystemService(WIFI_CONNECTION_AUTO);
-//                mIsAutoConnection = true;
-//                break;
-//            }
-//        }
-//        if(!mIsAutoConnection) {
-//            mAutoConnectionServiceIntent = null;
-//        }
-//    }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 액티비티 재시작시 변수 복구 (onPause) = = = = = = = = = =
 }
