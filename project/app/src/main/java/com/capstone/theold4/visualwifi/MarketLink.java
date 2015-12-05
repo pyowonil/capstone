@@ -40,38 +40,52 @@ public class MarketLink extends Activity {
             case 0:
                 imageView.setImageResource(R.drawable.device01);
                 imageView.setOnClickListener(onClickListener);
-                uri = Uri.parse("http://prod.danawa.com/info/?pcode=3567820&cate=112804");
-                textView.setText("EFM ipTIME A3004-dual 유무선공유기" +
-                        "\n 66,000원 가격 대비 성능 좋음");
+                uri = Uri.parse("http://prod.danawa.com/info/?pcode=2472103&keyword=%B0%F8%C0%AF%B1%E2");
+                textView.setText(R.string.device01_detail + "\n" + R.string.device01_info);
                 break;
             case 1:
                 imageView.setImageResource(R.drawable.device02);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=2463749&cate=112804");
-                textView.setText("TP-LINK Archer C7 AC1750 유무선공유기" +
-                        "\n 76,240원 가격 대비 성능 좋음");
+                textView.setText(R.string.device02_detail +"\n" + R.string.device02_info);
                 break;
             case 2:
                 imageView.setImageResource(R.drawable.device03);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=2754623&cate=112804");
-                textView.setText("ASUS RT-AC68U 유무선공유기" +
-                        "\n 257,610원 가격은 비싸지만 성능은 최고 막힘 없음");
+                textView.setText(R.string.device03_detail +"\n" + R.string.device03_info);
                 break;
             case 3:
                 imageView.setImageResource(R.drawable.device04);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=1957655&cate=112804");
-                textView.setText("D-Link DIR-850L 유무선공유기" +
-                        "\n 54,250 가격 대비 성능 좋음");
+                textView.setText(R.string.device04_detail +"\n" + R.string.device04_info);
                 break;
             case 4:
                 imageView.setImageResource(R.drawable.device05);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=3275636&cate=112804");
-                textView.setText("TP-LINK Archer C2 AC750 유무선공유기" +
-                        "\n 34,900원 가격 저렴 성능 좋음");
+                textView.setText(R.string.device05_detail +"\n" + R.string.device05_info);
                 break;
+            case 5:
+                imageView.setImageResource(R.drawable.device03);
+                imageView.setOnClickListener(onClickListener);
+                uri = Uri.parse("http://prod.danawa.com/info/?pcode=2754597&keyword=%B0%F8%C0%AF%B1%E2");
+                textView.setText(R.string.device03_detail +"\n" + R.string.device03_info);
+                break;
+            case 6:
+                imageView.setImageResource(R.drawable.device04);
+                imageView.setOnClickListener(onClickListener);
+                uri = Uri.parse("http://prod.danawa.com/info/?pcode=2214352&keyword=%B0%F8%C0%AF%B1%E2");
+                textView.setText(R.string.device04_detail +"\n" + R.string.device04_info);
+                break;
+            case 7:
+                imageView.setImageResource(R.drawable.device05);
+                imageView.setOnClickListener(onClickListener);
+                uri = Uri.parse("http://prod.danawa.com/info/?pcode=1533180&keyword=%B0%F8%C0%AF%B1%E2");
+                textView.setText(R.string.device05_detail +"\n" + R.string.device05_info);
+                break;
+
         }
 
     }

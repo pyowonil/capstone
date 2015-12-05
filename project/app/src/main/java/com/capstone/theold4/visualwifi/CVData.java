@@ -9,8 +9,7 @@ public class CVData {
     private String m_szLabel;
     private String m_szData;
     private int m_szData2;
-    public CVData(Context context, String p_szLabel, String p_szDataFile,
-                  int p_szData2) {
+    public CVData(Context context, String p_szLabel, String p_szDataFile, int p_szData2) {
         m_szLabel = p_szLabel;
         m_szData = p_szDataFile;
         m_szData2 = p_szData2;
