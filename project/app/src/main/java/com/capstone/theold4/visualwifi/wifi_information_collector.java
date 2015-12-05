@@ -85,7 +85,7 @@ public class wifi_information_collector extends Service implements LocationListe
                         //String capability = scanresult.capabilities;
                         String pw = "";
 
-                        String head_query1 = "REPLACE INTO LocalDevice VALUES ('";
+                        String head_query1 = "INSERT OR IGNORE INTO LocalDevice VALUES ('";
                         String head_query2 = "REPLACE INTO LocalData VALUES ('";
                         String tail_query1 = MAC + "', '" + lat + "', '" + lng + "', '" + ssid +
                                 "', '" + pw + "', '" + date + "', '" + time + "');";
