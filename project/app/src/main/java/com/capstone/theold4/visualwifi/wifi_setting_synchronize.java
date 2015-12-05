@@ -36,60 +36,18 @@ public class wifi_setting_synchronize extends Service {
                 final int ServerPORT = getResources().getInteger(R.integer.server_port);
                 final int TIMEOUT = getResources().getInteger(R.integer.connect_timeout);
 
-                Socket socket = new Socket();
-                SocketAddress socketAddress = new InetSocketAddress(ServerIP, ServerPORT);
-                socket.connect(socketAddress, TIMEOUT);
-                if(!socket.isConnected()) {
-                    Log.i("[SYNCHRONIZE]", "Connect to server fail");
-                    // TODO 서버 연결 실패시 알림
-                } else {
-                    DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-                    DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-                    Log.i("[SYNCHRONIZE]", "Connect to server finish");
-
-                    // 사용할 변수들
-                    String query = "SELECT * FROM LocalData;";
-                    Cursor cursor = mDatabaseRead.rawQuery(query, null);
-                    int id_mac, id_latitude, id_longitude, id_ssid, id_rssi, id_date, id_time;
-                    id_mac = cursor.getColumnIndex("MAC");
-                    id_latitude = cursor.getColumnIndex("Latitude");
-                    id_longitude = cursor.getColumnIndex("Longitude");
-                    id_ssid = cursor.getColumnIndex("SSID");
-                    id_rssi = cursor.getColumnIndex("RSSI");
-                    id_date = cursor.getColumnIndex("DATE");
-                    id_time = cursor.getColumnIndex("TIME");
-                    String data;
-
-                    // - - - - - - - - - - send data from client to server - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                    Log.i("[SYNCHRONIZE]", "Send data to server start");
-                    dataOutputStream.writeUTF("WifiData");
-                    while (cursor.moveToNext()) {
-                        data = "" + cursor.getString(id_mac) + "\t" + cursor.getFloat(id_latitude) + "\t" + cursor.getFloat(id_longitude) +
-                                "\t" + cursor.getString(id_ssid) + "\t" + cursor.getInt(id_rssi) + "\t" + cursor.getInt(id_date) +
-                                "\t" + cursor.getInt(id_time);
-                        Log.i("dbb", data);
-                        dataOutputStream.writeUTF(data);
-                    }
-                    mDatabaseRead.execSQL("DELETE FROM LocalData");
-                    Log.i("[SYNCHRONIZE]", "Send data to server finish");
-
-                }
-                socket.close();
-                Log.i("sleep", "1");
-                Thread.sleep(5000);
-                Log.i("sleep", "2");
-
-                Socket socket2 = new Socket();
-                SocketAddress socketAddress2 = new InetSocketAddress(ServerIP, ServerPORT);
-                socket2.connect(socketAddress2, TIMEOUT);
-                if(!socket2.isConnected()) {
+                Log.i("[SYNCHRONIZE]", "Receive data from server start");
+                Socket socket1 = new Socket();
+                SocketAddress socketAddress1 = new InetSocketAddress(ServerIP, ServerPORT);
+                socket1.connect(socketAddress1, TIMEOUT);
+                if(!socket1.isConnected()) {
                     Log.i("[SYNCHRONIZE]", "Connect to server fail");
                     // TODO 서버 연결 실패시 알림
                 } else {
                     // - - - - - - - - - - receive data from server to client - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                    DataOutputStream dataOutputStream = new DataOutputStream(socket2.getOutputStream());
-                    DataInputStream dataInputStream = new DataInputStream(socket2.getInputStream());
-                    Log.i("[SYNCHRONIZE]", "Receive data from server start");
+                    DataOutputStream dataOutputStream = new DataOutputStream(socket1.getOutputStream());
+                    DataInputStream dataInputStream = new DataInputStream(socket1.getInputStream());
+
                     dataOutputStream.writeUTF("WifiData_down");
                     String data;
                     String query;
@@ -99,6 +57,9 @@ public class wifi_setting_synchronize extends Service {
                         } catch (IOException ioe) {
                             break;
                         }
+                        if(data.equals("END"))break;
+
+
 
                         StringTokenizer token = new StringTokenizer(data, "\t");
                         String mac = token.nextToken();
@@ -113,21 +74,23 @@ public class wifi_setting_synchronize extends Service {
                                 "', '" + ssid + "', '" + pw + "', '" + date + "', '" + time + "');";
                         mDatabaseWrite.execSQL(query);
                     }
-                    Log.i("[SYNCHRONIZE]", "Receive data from server finish");
+
                 }
-                socket2.close();
-                Socket socket3 = new Socket();
-                SocketAddress socketAddress3 = new InetSocketAddress(ServerIP, ServerPORT);
-                socket3.connect(socketAddress3, TIMEOUT);
-                if(!socket3.isConnected()) {
+                socket1.close();
+                Log.i("[SYNCHRONIZE]", "Receive data from server finish");
+
+                Thread.sleep(2000);
+                Log.i("[SYNCHRONIZE]", "Receive device data from server start");
+                Socket socket2 = new Socket();
+                SocketAddress socketAddress2 = new InetSocketAddress(ServerIP, ServerPORT);
+                socket2.connect(socketAddress2, TIMEOUT);
+                if(!socket2.isConnected()) {
                     Log.i("[SYNCHRONIZE]", "Connect to server fail");
                     // TODO 서버 연결 실패시 알림
                 } else {
-                    DataOutputStream dataOutputStream = new DataOutputStream(socket3.getOutputStream());
-                    DataInputStream dataInputStream = new DataInputStream(socket3.getInputStream());
-                    Log.i("[SYNCHRONIZE]", "Connect to server finish");
-                    // - - - - - - - - - - receive device data from server to client - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                    Log.i("[SYNCHRONIZE]", "Receive device data from server start");
+                    DataOutputStream dataOutputStream = new DataOutputStream(socket2.getOutputStream());
+                    DataInputStream dataInputStream = new DataInputStream(socket2.getInputStream());
+
                     dataOutputStream.writeUTF("WifiDevice");
                     String data;
                     String query;
@@ -135,9 +98,11 @@ public class wifi_setting_synchronize extends Service {
                         try {
                             data = dataInputStream.readUTF();
                         } catch (IOException ioe) {
+                            ioe.printStackTrace();
                             break;
                         }
-
+                        if(data.equals("END"))break;
+                        Log.i("dddd",data);
                         StringTokenizer token = new StringTokenizer(data, "\t");
                         String mac = token.nextToken();
                         String lat = token.nextToken();
@@ -151,10 +116,51 @@ public class wifi_setting_synchronize extends Service {
                                 "', '" + ssid + "', '" + pw + "', '" + date + "', '" + time + "');";
                         mDatabaseWrite.execSQL(query);
                     }
-                    Log.i("[SYNCHRONIZE]", "Receive device data from server finish");
 
-                    socket3.close();
                 }
+                socket2.close();
+                Log.i("[SYNCHRONIZE]", "Receive device data from server finish");
+
+                Thread.sleep(5000);
+                Socket socket3 = new Socket();
+                SocketAddress socketAddress3 = new InetSocketAddress(ServerIP, ServerPORT);
+                socket3.connect(socketAddress3, TIMEOUT);
+                if(!socket3.isConnected()) {
+                    Log.i("[SYNCHRONIZE]", "Connect to server fail");
+                    // TODO 서버 연결 실패시 알림
+                } else {
+                    DataOutputStream dataOutputStream3 = new DataOutputStream(socket3.getOutputStream());
+                    DataInputStream dataInputStream3 = new DataInputStream(socket3.getInputStream());
+                    Log.i("[SYNCHRONIZE]", "Connect to server finish");
+
+                    // 사용할 변수들
+                    String query3 = "SELECT * FROM LocalData;";
+                    Cursor cursor = mDatabaseRead.rawQuery(query3, null);
+                    int id_mac, id_latitude, id_longitude, id_ssid, id_rssi, id_date, id_time;
+                    id_mac = cursor.getColumnIndex("MAC");
+                    id_latitude = cursor.getColumnIndex("Latitude");
+                    id_longitude = cursor.getColumnIndex("Longitude");
+                    id_ssid = cursor.getColumnIndex("SSID");
+                    id_rssi = cursor.getColumnIndex("RSSI");
+                    id_date = cursor.getColumnIndex("DATE");
+                    id_time = cursor.getColumnIndex("TIME");
+                    String data;
+                    // - - - - - - - - - - send data from client to server - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                    Log.i("[SYNCHRONIZE]", "Send data to server start");
+                    dataOutputStream3.writeUTF("WifiData");
+                    while (cursor.moveToNext()) {
+                        data = "" + cursor.getString(id_mac) + "\t" + cursor.getFloat(id_latitude) + "\t" + cursor.getFloat(id_longitude) +
+                                "\t" + cursor.getString(id_ssid) + "\t" + cursor.getInt(id_rssi) + "\t" + cursor.getInt(id_date) +
+                                "\t" + cursor.getInt(id_time);
+                        Log.i("dbb", data);
+                        dataOutputStream3.writeUTF(data);
+                    }
+                    mDatabaseRead.execSQL("DELETE FROM LocalData");
+                    Log.i("[SYNCHRONIZE]", "Send data to server finish");
+
+                }
+                socket3.close();
+
             }catch(Exception e) {
                 e.printStackTrace();
             }finally {
