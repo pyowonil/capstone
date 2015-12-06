@@ -294,7 +294,7 @@ public class visual_wifi_map extends AppCompatActivity
         Location location = mMap.getMyLocation();
         if(location != null){
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),17));
-            drawSignal();
+//            drawSignal();
         }
         return false;
     }
@@ -302,7 +302,7 @@ public class visual_wifi_map extends AppCompatActivity
     public void onMyLocationChange(Location location) {
         // TODO 위치 변경 이벤트 처리
         if(location != null){
-            drawSignal();
+//            drawSignal();
         }
     }
     @Override

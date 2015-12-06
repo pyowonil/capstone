@@ -2,6 +2,10 @@ package com.capstone.theold4.visualwifi;
 
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,6 +23,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AnticipateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -40,6 +46,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.ogaclejapan.arclayout.ArcLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +60,8 @@ public class editor extends AppCompatActivity
         GoogleMap.OnMapClickListener, // 맵 클릭 리스너
         GoogleMap.OnMapLongClickListener, // 맵 클릭 리스너
         GoogleMap.OnMarkerDragListener, // 마커 드래그 리스너
-        ActivityCompat.OnRequestPermissionsResultCallback // Permission Request Callback 기능
+        ActivityCompat.OnRequestPermissionsResultCallback, // Permission Request Callback 기능
+        View.OnClickListener    // 버튼 클릭 리스너
 {
 
     // Request code for location permission request.
@@ -76,6 +84,7 @@ public class editor extends AppCompatActivity
     private DrawCanvas mDrawCanvas;
 
     private double mDeviceRange = 100;
+
     private enum mMode {DEFAULT, DRAW, LOAD, RUN, EXIT};
     private mMode mCurrentMode = mMode.DEFAULT;
 
@@ -196,6 +205,10 @@ public class editor extends AppCompatActivity
         return result[0];
     }
 
+    private View fab;
+    private ArcLayout arcLayout;
+    View menuLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -207,6 +220,16 @@ public class editor extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        fab = findViewById(R.id.fab);
+        menuLayout = findViewById(R.id.draw_map);
+        arcLayout = (ArcLayout) findViewById(R.id.arc_layout);
+
+        for (int i = 0, size = arcLayout.getChildCount(); i < size; i++) {
+            arcLayout.getChildAt(i).setOnClickListener(this);
+        }
+        fab.setOnClickListener(this);
+        hideMenu();
 
         mDeviceListView = (ListView)findViewById(R.id.deviceListView);
         mDeviceList = new ArrayList<CVData>();//객체 생성
@@ -488,7 +511,9 @@ public class editor extends AppCompatActivity
         enableMyLocation();
 
         CameraPosition position = intent.getParcelableExtra(getResources().getString(R.string.position));
-        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+        if(position != null){
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(position));
+        }
     }
 
     // Enables the My Location layer if the fine location permission has been granted.
@@ -602,6 +627,17 @@ public class editor extends AppCompatActivity
         mDrawCanvas.simulate();
         mCurrentMode = mMode.RUN;
     }
+    public void onClickMarket(View view) {
+        IS_MAP_MOVEABLE = false;
+        if(mDeviceNum == -1){
+            Toast.makeText(getApplicationContext(),"디바이스를 선택해 주세요.",Toast.LENGTH_SHORT).show();
+        }else{
+            Intent intent = new Intent(editor.this, MarketLink.class);
+            intent.putExtra("DeviceNum",mDeviceNum);
+            startActivity(intent);
+            finish();
+        }
+    }
     public void onClickExit(View view) {
         IS_MAP_MOVEABLE = false;
         mCurrentMode = mMode.EXIT;
@@ -609,4 +645,127 @@ public class editor extends AppCompatActivity
         finish();
     }
 
+    // ---------------------------------------- Editor Button UI --------------------------------------------
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.fab) {
+            onFabClick(v);
+            return;
+        }else if(v.getId() == R.id.btn_draw){
+            onClickDraw(v);
+            return;
+        }else if(v.getId() == R.id.btn_back){
+            onClickBack(v);
+            return;
+        }else if(v.getId() == R.id.btn_load){
+            onClickLoad(v);
+            return;
+        }else if(v.getId() == R.id.btn_run){
+            onClickRun(v);
+            return;
+        }else if(v.getId() == R.id.btn_clear){
+            onClickClear(v);
+            return;
+        }else if(v.getId() == R.id.btn_market){
+            onClickMarket(v);
+            return;
+        }else if(v.getId() == R.id.btn_exit){
+            onClickExit(v);
+            return;
+        }
+    }
+
+    private void onFabClick(View v) {
+        if (v.isSelected()) {
+            hideMenu();
+        } else {
+            showMenu();
+        }
+        v.setSelected(!v.isSelected());
+    }
+
+    @SuppressWarnings("NewApi")
+    private void showMenu() {
+        menuLayout.setVisibility(View.VISIBLE);
+
+        List<Animator> animList = new ArrayList<>();
+
+        for (int i = 0, len = arcLayout.getChildCount(); i < len; i++) {
+            animList.add(createShowItemAnimator(arcLayout.getChildAt(i)));
+        }
+
+        AnimatorSet animSet = new AnimatorSet();
+        animSet.setDuration(400);
+        animSet.setInterpolator(new OvershootInterpolator());
+        animSet.playTogether(animList);
+        animSet.start();
+    }
+
+    @SuppressWarnings("NewApi")
+    private void hideMenu() {
+
+        List<Animator> animList = new ArrayList<>();
+
+        for (int i = arcLayout.getChildCount() - 1; i >= 0; i--) {
+            animList.add(createHideItemAnimator(arcLayout.getChildAt(i)));
+        }
+
+        AnimatorSet animSet = new AnimatorSet();
+        animSet.setDuration(400);
+        animSet.setInterpolator(new AnticipateInterpolator());
+        animSet.playTogether(animList);
+        animSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                menuLayout.setVisibility(View.INVISIBLE);
+            }
+        });
+        animSet.start();
+    }
+
+    private Animator createShowItemAnimator(View item) {
+
+        float dx = fab.getX() - item.getX();
+        float dy = fab.getY() - item.getY();
+
+        item.setRotation(0f);
+        item.setTranslationX(dx);
+        item.setTranslationY(dy);
+
+        Animator anim = ObjectAnimator.ofPropertyValuesHolder(
+                item,
+                AnimatorUtils.rotation(0f, 720f),
+                AnimatorUtils.translationX(dx, 0f),
+                AnimatorUtils.translationY(dy, 0f)
+        );
+
+        return anim;
+    }
+
+    private Animator createHideItemAnimator(final View item) {
+        float dx = fab.getX() - item.getX();
+        float dy = fab.getY() - item.getY();
+
+        Animator anim = ObjectAnimator.ofPropertyValuesHolder(
+                item,
+                AnimatorUtils.rotation(720f, 0f),
+                AnimatorUtils.translationX(0f, dx),
+                AnimatorUtils.translationY(0f, dy)
+        );
+
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                item.setTranslationX(0f);
+                item.setTranslationY(0f);
+            }
+        });
+
+        return anim;
+    }
+
+    // ---------------------------------------- Editor Button UI --------------------------------------------
 }

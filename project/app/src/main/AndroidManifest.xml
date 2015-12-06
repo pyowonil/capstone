@@ -56,6 +56,8 @@
             android:label="@string/app_editor_name"
             android:screenOrientation="portrait"> <!-- 디바이스 세로 고정 -->
         </activity>
+        <activity android:name=".MarketLink">
+        </activity>
 
         <service android:name=".wifi_connection_auto" android:enabled="true">
             <intent-filter>

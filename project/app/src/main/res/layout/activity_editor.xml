@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:weightSum="1">
 
@@ -21,8 +22,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
-            android:id="@+id/draw_map"
-            android:layout_alignBottom="@+id/linearLayout">
+            android:id="@+id/draw_map">
 
             <ListView
                 android:layout_width="339dp"
@@ -31,73 +31,103 @@
                 android:layout_gravity="center"
                 android:layout_alignBottom="@+id/draw_map"
                 android:listSelector="@drawable/list_selector"/>
-        </FrameLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
+
+        <com.ogaclejapan.arclayout.ArcLayout
+            android:id="@+id/arc_layout"
             android:layout_width="match_parent"
-            android:layout_height="35dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
-            android:layout_gravity="bottom|center"
-            android:id="@+id/linearLayout">
+            android:layout_height="match_parent"
+            android:layout_marginBottom="32dp"
+            app:arc_axisRadius="@dimen/layout_child_offset_path"
+            app:arc_freeAngle="true"
+            app:arc_origin="bottom"
+            app:arc_radius="@dimen/layout_radius_path"
+            >
 
             <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                style="@style/Item.Path"
                 android:text="DRAW"
+                android:textColor="@color/path_orange"
+                android:textSize="9dp"
                 android:id="@+id/btn_draw"
                 android:onClick="onClickDraw"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1" />
+                app:arc_angle="10"
+                />
 
             <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                style="@style/Item.Path"
                 android:text="BACK"
+                android:textColor="@color/path_blue"
+                android:textSize="9dp"
                 android:id="@+id/btn_back"
                 android:onClick="onClickBack"
-                android:layout_weight="1" />
+                app:arc_angle="37"
+                />
 
             <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                style="@style/Item.Path"
                 android:text="LOAD"
+                android:textColor="@color/path_black"
+                android:textSize="9dp"
                 android:id="@+id/btn_load"
                 android:onClick="onClickLoad"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1" />
+                app:arc_angle="64"
+                />
 
             <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                style="@style/Item.Path"
                 android:text="CLEAR"
+                android:textColor="@color/path_green"
+                android:textSize="9dp"
                 android:id="@+id/btn_clear"
                 android:onClick="onClickClear"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1" />
+                app:arc_angle="90"
+                />
 
             <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                style="@style/Item.Path"
                 android:text="RUN"
+                android:textColor="@color/path_purple"
+                android:textSize="9dp"
                 android:id="@+id/btn_run"
                 android:onClick="onClickRun"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1" />
+                app:arc_angle="117"
+                />
 
             <Button
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                style="@style/Item.Path"
+                android:text="MARKET"
+                android:textColor="@color/path_yellow"
+                android:textSize="9dp"
+                android:id="@+id/btn_market"
+                android:onClick="onClickMarket"
+                app:arc_angle="144"
+                />
+
+            <Button
+                style="@style/Item.Path"
                 android:text="EXIT"
+                android:textColor="@color/path_red"
+                android:textSize="9dp"
                 android:id="@+id/btn_exit"
                 android:onClick="onClickExit"
-                android:layout_gravity="center_vertical"
-                android:layout_weight="1" />
+                app:arc_angle="170"
+                />
 
-        </LinearLayout>
-
+        </com.ogaclejapan.arclayout.ArcLayout>
+        </FrameLayout>
+        <Button
+            android:id="@+id/fab"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/path_fab"
+            android:text="+"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            />
     </RelativeLayout>
-
 
 </LinearLayout>
