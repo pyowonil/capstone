@@ -135,7 +135,7 @@ public class visual_wifi_map extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which) {
                 mSelectedSSID = scanResults[which];
                 for (ScanResult scanresult : mScanResult) {
-                    if (scanresult.equals(mSelectedSSID)) {
+                    if (scanresult.SSID.equals(mSelectedSSID)) {
                         mSelectedCapability = scanresult.capabilities;
                         mSelectedMAC = scanresult.BSSID;
                         break;
@@ -283,6 +283,7 @@ public class visual_wifi_map extends AppCompatActivity
             int id_ssid = cursor.getColumnIndex("SSID");
             int id_mac = cursor.getColumnIndex("MAC");
             while(cursor.moveToNext()) {
+                Log.i("[UPLOAD]", cursor.getString(id_ssid) + " " + cursor.getString(id_mac));
                 items_ssid.add(cursor.getString(id_ssid));
                 items_mac.add(cursor.getString(id_mac));
             }

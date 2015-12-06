@@ -75,7 +75,7 @@ public class wifi_connection_auto extends Service {
                             // TODO 패스워드 매커니즘 필요
                             String password = "";
                             {
-                                String query = "SELECT SSID, PW FROM LocalDevice UNION SELECT SSID, PW FROM WifiDevice;";
+                                String query = "SELECT SSID, PW FROM WifiShare;";
                                 Cursor cursor = mDatabaseRead.rawQuery(query, null);
                                 int id_ssid = cursor.getColumnIndex("SSID");
                                 int id_pw = cursor.getColumnIndex("PW");
