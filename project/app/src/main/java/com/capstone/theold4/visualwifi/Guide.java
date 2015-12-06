@@ -2,6 +2,7 @@ package com.capstone.theold4.visualwifi;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -9,7 +10,7 @@ import android.widget.ScrollView;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
-public class Guide extends Activity implements OnClickListener{
+public class Guide extends AppCompatActivity implements OnClickListener{
     Button btn_finish;
     ScrollView scr_guide;
     TextView txt_guide;
