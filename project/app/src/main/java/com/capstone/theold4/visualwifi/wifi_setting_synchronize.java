@@ -161,6 +161,52 @@ public class wifi_setting_synchronize extends Service {
 
                 }
                 socket3.close();
+
+
+                // ****************************************
+                // Server Wifi Share -> Client Wifi Share
+                // ****************************************
+                Log.i("[SYNCHRONIZE]", "[Receive share from server] [start]");
+                Socket socket4 = new Socket();
+                SocketAddress socketAddress4 = new InetSocketAddress(ServerIP, ServerPORT);
+                socket4.connect(socketAddress4, TIMEOUT);
+                if(!socket4.isConnected()) {
+                    Log.i("[SYNCHRONIZE]", "Connect socket4 fail");
+                } else {
+                    DataOutputStream dataOutputStream = new DataOutputStream(socket4.getOutputStream());
+                    DataInputStream dataInputStream = new DataInputStream(socket4.getInputStream());
+
+                    dataOutputStream.writeUTF("Share_down");
+                    String data;
+                    String query;
+                    while (true) {
+                        try {
+                            data = dataInputStream.readUTF();
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                            break;
+                        }
+                        if(data.equals("END"))break;
+                        StringTokenizer token = new StringTokenizer(data, "\t");
+                        String mac = token.nextToken();
+                        String ssid = token.nextToken();
+                        String pw = token.nextToken();
+                        String capability = token.nextToken();
+                        String date = token.nextToken();
+                        String time = token.nextToken();
+
+                        query = "REPLACE INTO WifiDevice VALUES " + "('" + mac + "', '" + ssid + "', '" + pw +
+                                "', '" + capability + "', '" + date + "', '" + time + "');";
+                        mDatabaseWrite.execSQL(query);
+                    }
+
+                }
+                socket4.close();
+                Log.i("[SYNCHRONIZE]", "[Receive share from server] [finish]");
+
+
+
+
             }catch(Exception e) {
                 e.printStackTrace();
             }finally {
