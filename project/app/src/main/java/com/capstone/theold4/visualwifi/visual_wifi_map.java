@@ -42,6 +42,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 public class visual_wifi_map extends AppCompatActivity
     implements
@@ -281,15 +283,27 @@ public class visual_wifi_map extends AppCompatActivity
             mMap.setMyLocationEnabled(true);
         }
     }
+
+    // 신호 강도, AP 위치 그리는 리스트
+    private List<SignalInfo> mSignalInfoList;
+
     @Override
     public boolean onMyLocationButtonClick() {
         // Return false so that we don't consume the event and the default behavior still occurs
         // (the camera animates to the user's current position).
+        Location location = mMap.getMyLocation();
+        if(location != null){
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),17));
+            drawSignal();
+        }
         return false;
     }
     @Override
     public void onMyLocationChange(Location location) {
         // TODO 위치 변경 이벤트 처리
+        if(location != null){
+            drawSignal();
+        }
     }
     @Override
     public void onMapClick(LatLng latLng) {
@@ -333,8 +347,17 @@ public class visual_wifi_map extends AppCompatActivity
     @Override
     public boolean onMarkerClick(Marker marker) {
         // TODO 마커 클릭 이벤트 처리
+        if(!mSignalInfoList.isEmpty()){
+            for(SignalInfo signal : mSignalInfoList){
+                if(signal.getMACAddress().equals(marker.getTitle())){
+                    signal.setVisible();
+                }
+            }
+        }
+
         if(mIsAutoConnection) {
             // TODO 자동 연결시 필터링 기능, 필요하다면 따로 필터링 플래그를 두는것도 괜찮음
+
         } else {
             // TODO 수동 연결시 연결 기능
         }
@@ -342,17 +365,18 @@ public class visual_wifi_map extends AppCompatActivity
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Google Map API = = = = = = = = = =
 
-    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Google Map API = = = = = = = = = =
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Draw Signal = = = = = = = = = =
     class SignalInfo{
         private String ssid;
         private String MACAddress;
         private LatLng APPoint;
         private Circle APRange;
+        private Marker AP;
         private List<Circle> signalPoints;
-        private GoogleMap map;
+        private int color;
+        private boolean isVisible = true;
 
-        public SignalInfo(GoogleMap map){
-            this.map = map;
+        public SignalInfo(){
             signalPoints = new ArrayList<>();
         }
 
@@ -366,28 +390,98 @@ public class visual_wifi_map extends AppCompatActivity
 
         public void setAPPoint(LatLng center){
             this.APPoint = center;
+            this.APRange = mMap.addCircle(new CircleOptions().center(APPoint)
+                    .radius(10).strokeWidth(1).strokeColor(Color.argb(100,180,60,60))
+                    .fillColor(Color.argb(100,180,60,60)).visible(true));
+            this.AP = mMap.addMarker(new MarkerOptions().position(APPoint)
+                    .title(MACAddress).icon(BitmapDescriptorFactory.fromResource(R.drawable.wifi_logo)).visible(true));
         }
 
-        public void setVisible(boolean visible){
-            APRange.setVisible(visible);
+        public void setColor(int color){
+            this.color = color;
+        }
+
+        public String getSSID(){
+            return ssid;
+        }
+
+        public String getMACAddress(){
+            return MACAddress;
+        }
+
+        public void setVisible(){
+            if(isVisible){
+                isVisible = false;
+            }else{
+                isVisible = true;
+            }
+            APRange.setVisible(isVisible);
 
             for(Circle circle : signalPoints){
-                circle.setVisible(visible);
+                circle.setVisible(isVisible);
             }
         }
 
-        public void drawCircle(){
-//            this.APRange = map.addCircle(new CircleOptions()
-//                    .radius(10).strokeWidth(1).strokeColor(Color.argb(100,200,100,100)).fillColor(Color.argb(100,200,100,100))
-//                    .center(center).visible(true));
-        }
-
-        public void drawSignal(){
-
+        public void setSignal(LatLng point){
+            this.signalPoints.add(mMap.addCircle(new CircleOptions()
+                    .radius(3).strokeWidth(1).strokeColor(color).fillColor(color)
+                    .center(point).visible(true)));
         }
     }
-    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Google Map API = = = = = = = = = =
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Draw Signal = = = = = = = = = =
 
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Draw Signal = = = = = = = = = =
+    private void drawSignal(){
+        mMap.clear();
+        mSignalInfoList = new ArrayList<>();
+
+        String query = "SELECT * FROM LocalData;";
+        Cursor cursor = mDatabaseRead.rawQuery(query,null);
+        int id_mac, id_latitude, id_longitude, id_ssid, id_rssi;
+        id_mac = cursor.getColumnIndex("MAC");
+        id_latitude = cursor.getColumnIndex("Latitude");
+        id_longitude = cursor.getColumnIndex("Longitude");
+        id_ssid = cursor.getColumnIndex("SSID");
+        id_rssi = cursor.getColumnIndex("RSSI");
+        // AP마다 색깔을 랜덤으로 하기 위해서
+        Random random = new Random();
+
+        while (cursor.moveToNext()) {
+            // 비어있으면 새로 추가
+            if(mSignalInfoList.isEmpty()){
+                mSignalInfoList.add(new SignalInfo());
+                mSignalInfoList.get(0).setSSID(cursor.getString(id_ssid));
+                mSignalInfoList.get(0).setMACAddress(cursor.getString(id_mac));
+                int color = Color.argb(30,random.nextInt(256),random.nextInt(256),random.nextInt(256));
+                mSignalInfoList.get(0).setColor(color);
+                mSignalInfoList.get(0).setSignal(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
+                mSignalInfoList.get(0).setAPPoint(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
+            }else{
+                String ssid = cursor.getString(id_ssid);
+                String mac = cursor.getString(id_mac);
+                boolean allCheck = false;
+                for(SignalInfo signal : mSignalInfoList){
+                    // MAC이 같다면 신호강도만 추가 그리기
+                    if(signal.getMACAddress().equals(mac)) {
+                        allCheck = true;
+                        signal.setSignal(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
+                        break;
+                    }
+                }
+                // 같지 않으면 새로 추가
+                if(!allCheck){
+                    mSignalInfoList.add(new SignalInfo());
+                    mSignalInfoList.get(mSignalInfoList.size() - 1).setSSID(cursor.getString(id_ssid));
+                    mSignalInfoList.get(mSignalInfoList.size() - 1).setMACAddress(cursor.getString(id_mac));
+                    int color = Color.argb(30,random.nextInt(256),random.nextInt(256),random.nextInt(256));
+                    mSignalInfoList.get(mSignalInfoList.size() - 1).setColor(color);
+                    mSignalInfoList.get(mSignalInfoList.size() - 1).setSignal(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
+                    mSignalInfoList.get(mSignalInfoList.size() - 1).setAPPoint(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
+                }
+            }
+        }
+    }
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Draw Signal = = = = = = = = = =
 
     // = = = = = = = = = = 사이드 메뉴 (DrawerLayout) = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     private DrawerLayout mDrawerLayout;
