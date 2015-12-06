@@ -28,8 +28,6 @@ public class Guide extends AppCompatActivity implements OnClickListener{
 
         btn_finish.setOnClickListener(this);
         viewFlipper = (ViewFlipper) findViewById(R.id.viewflipper);
-
-
     }
 
     @Override
@@ -39,6 +37,12 @@ public class Guide extends AppCompatActivity implements OnClickListener{
             Log.i("btn", "OnClick() btn_finish()");
             finish();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        finish();
     }
 
     // Using the following method, we will handle all screen swaps.
