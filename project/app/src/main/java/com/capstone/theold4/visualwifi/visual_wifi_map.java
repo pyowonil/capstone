@@ -756,11 +756,11 @@ public class visual_wifi_map extends AppCompatActivity
                 mDrawerListItems.add(getResources().getString(R.string.wifi_auto));
             }
             mDrawerListItems.add(getResources().getString(R.string.wifi_manual));
-            if(mIsInformationCollection) {
-                mDrawerListItems.add(getResources().getString(R.string.wifi_collector_stop));
-            } else {
-                mDrawerListItems.add(getResources().getString(R.string.wifi_collector_run));
-            }
+//            if(mIsInformationCollection) {
+//                mDrawerListItems.add(getResources().getString(R.string.wifi_collector_stop));
+//            } else {
+//                mDrawerListItems.add(getResources().getString(R.string.wifi_collector_run));
+//            }
             mDrawerListItems.add(getResources().getString(R.string.back));
         } else {
             mDrawerListItems.add(getResources().getString(R.string.wifi_setting));
