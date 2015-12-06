@@ -222,7 +222,7 @@ public class editor extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         fab = findViewById(R.id.fab);
-        menuLayout = findViewById(R.id.draw_map);
+        menuLayout = findViewById(R.id.menu_layout);
         arcLayout = (ArcLayout) findViewById(R.id.arc_layout);
 
         for (int i = 0, size = arcLayout.getChildCount(); i < size; i++) {
@@ -590,6 +590,7 @@ public class editor extends AppCompatActivity
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(false);
         }
+        hideMenu();
     }
     public void onClickBack(View view) {
         if(!mDrawPoints.isEmpty()) {
@@ -605,6 +606,7 @@ public class editor extends AppCompatActivity
             circle.markerDraggable(true);
         }
         mDeviceListView.setVisibility(View.VISIBLE);
+        hideMenu();
     }
     public void onClickClear(View view) {
         IS_MAP_MOVEABLE = false;
@@ -622,13 +624,14 @@ public class editor extends AppCompatActivity
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(false);
         }
-
+        hideMenu();
         // 실제 선정된 기기를 통한 연산
         mDrawCanvas.simulate();
         mCurrentMode = mMode.RUN;
     }
     public void onClickMarket(View view) {
         IS_MAP_MOVEABLE = false;
+        hideMenu();
         if(mDeviceNum == -1){
             Toast.makeText(getApplicationContext(),"디바이스를 선택해 주세요.",Toast.LENGTH_SHORT).show();
         }else{

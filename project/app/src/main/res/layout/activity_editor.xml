@@ -32,89 +32,96 @@
                 android:layout_alignBottom="@+id/draw_map"
                 android:listSelector="@drawable/list_selector"/>
 
-
-        <com.ogaclejapan.arclayout.ArcLayout
-            android:id="@+id/arc_layout"
+        </FrameLayout>
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="32dp"
-            app:arc_axisRadius="@dimen/layout_child_offset_path"
-            app:arc_freeAngle="true"
-            app:arc_origin="bottom"
-            app:arc_radius="@dimen/layout_radius_path"
-            >
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/menu_layout">
 
-            <Button
-                style="@style/Item.Path"
-                android:text="DRAW"
-                android:textColor="@color/path_orange"
-                android:textSize="9dp"
-                android:id="@+id/btn_draw"
-                android:onClick="onClickDraw"
-                app:arc_angle="10"
-                />
+            <com.ogaclejapan.arclayout.ArcLayout
+                android:id="@+id/arc_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="32dp"
+                app:arc_axisRadius="@dimen/layout_child_offset_path"
+                app:arc_freeAngle="true"
+                app:arc_origin="bottom"
+                app:arc_radius="@dimen/layout_radius_path"
+                >
 
-            <Button
-                style="@style/Item.Path"
-                android:text="BACK"
-                android:textColor="@color/path_blue"
-                android:textSize="9dp"
-                android:id="@+id/btn_back"
-                android:onClick="onClickBack"
-                app:arc_angle="37"
-                />
+                <Button
+                    style="@style/Item.Path"
+                    android:text="DRAW"
+                    android:textColor="@color/path_orange"
+                    android:textSize="9dp"
+                    android:id="@+id/btn_draw"
+                    android:onClick="onClickDraw"
+                    app:arc_angle="10"
+                    />
 
-            <Button
-                style="@style/Item.Path"
-                android:text="LOAD"
-                android:textColor="@color/path_black"
-                android:textSize="9dp"
-                android:id="@+id/btn_load"
-                android:onClick="onClickLoad"
-                app:arc_angle="64"
-                />
+                <Button
+                    style="@style/Item.Path"
+                    android:text="BACK"
+                    android:textColor="@color/path_blue"
+                    android:textSize="9dp"
+                    android:id="@+id/btn_back"
+                    android:onClick="onClickBack"
+                    app:arc_angle="37"
+                    />
 
-            <Button
-                style="@style/Item.Path"
-                android:text="CLEAR"
-                android:textColor="@color/path_green"
-                android:textSize="9dp"
-                android:id="@+id/btn_clear"
-                android:onClick="onClickClear"
-                app:arc_angle="90"
-                />
+                <Button
+                    style="@style/Item.Path"
+                    android:text="LOAD"
+                    android:textColor="@color/path_black"
+                    android:textSize="9dp"
+                    android:id="@+id/btn_load"
+                    android:onClick="onClickLoad"
+                    app:arc_angle="64"
+                    />
 
-            <Button
-                style="@style/Item.Path"
-                android:text="RUN"
-                android:textColor="@color/path_purple"
-                android:textSize="9dp"
-                android:id="@+id/btn_run"
-                android:onClick="onClickRun"
-                app:arc_angle="117"
-                />
+                <Button
+                    style="@style/Item.Path"
+                    android:text="CLEAR"
+                    android:textColor="@color/path_green"
+                    android:textSize="9dp"
+                    android:id="@+id/btn_clear"
+                    android:onClick="onClickClear"
+                    app:arc_angle="90"
+                    />
 
-            <Button
-                style="@style/Item.Path"
-                android:text="MARKET"
-                android:textColor="@color/path_yellow"
-                android:textSize="9dp"
-                android:id="@+id/btn_market"
-                android:onClick="onClickMarket"
-                app:arc_angle="144"
-                />
+                <Button
+                    style="@style/Item.Path"
+                    android:text="RUN"
+                    android:textColor="@color/path_purple"
+                    android:textSize="9dp"
+                    android:id="@+id/btn_run"
+                    android:onClick="onClickRun"
+                    app:arc_angle="117"
+                    />
 
-            <Button
-                style="@style/Item.Path"
-                android:text="EXIT"
-                android:textColor="@color/path_red"
-                android:textSize="9dp"
-                android:id="@+id/btn_exit"
-                android:onClick="onClickExit"
-                app:arc_angle="170"
-                />
+                <Button
+                    style="@style/Item.Path"
+                    android:text="MARKET"
+                    android:textColor="@color/path_yellow"
+                    android:textSize="9dp"
+                    android:id="@+id/btn_market"
+                    android:onClick="onClickMarket"
+                    app:arc_angle="144"
+                    />
 
-        </com.ogaclejapan.arclayout.ArcLayout>
+                <Button
+                    style="@style/Item.Path"
+                    android:text="EXIT"
+                    android:textColor="@color/path_red"
+                    android:textSize="9dp"
+                    android:id="@+id/btn_exit"
+                    android:onClick="onClickExit"
+                    app:arc_angle="170"
+                    />
+
+            </com.ogaclejapan.arclayout.ArcLayout>
         </FrameLayout>
         <Button
             android:id="@+id/fab"

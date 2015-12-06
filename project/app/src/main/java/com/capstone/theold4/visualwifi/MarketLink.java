@@ -92,8 +92,6 @@ public class MarketLink extends Activity {
 
     public void onDestroy(){
         super.onDestroy();
-        Intent intent = new Intent(MarketLink.this, visual_wifi_map.class);
-        startActivity(intent);
         finish();
     }
 }
