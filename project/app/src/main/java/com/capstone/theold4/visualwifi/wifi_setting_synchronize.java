@@ -239,6 +239,7 @@ public class wifi_setting_synchronize extends Service {
                             break;
                         }
                         if(data.equals("END"))break;
+                        Log.i("Share : ",""+data);
                         StringTokenizer token = new StringTokenizer(data, "\t");
                         String mac = token.nextToken();
                         String ssid = token.nextToken();
@@ -247,9 +248,39 @@ public class wifi_setting_synchronize extends Service {
                         String date = token.nextToken();
                         String time = token.nextToken();
 
-                        query = "REPLACE INTO WifiDevice VALUES " + "('" + mac + "', '" + ssid + "', '" + pw +
-                                "', '" + capability + "', '" + date + "', '" + time + "');";
-                        mDatabaseWrite.execSQL(query);
+                        try {
+                            query = "REPLACE INTO WifiShare VALUES " + "('" + mac + "', '" + ssid + "', '" + pw +
+                                    "', '" + capability + "', '" + date + "', '" + time + "');";
+
+
+                            mDatabaseWrite.execSQL(query);
+                        }
+                        catch(SQLiteException sqle){
+                            sqle.printStackTrace();
+                        }
+                /// test : show WifiShare Table
+//
+//                        Log.i("WifiShare test ","test start!");
+//                        String query6 = "SELECT * FROM WifiShare;";
+//                        Cursor cursor = mDatabaseRead.rawQuery(query6, null);
+//                        int id_mac, id_ssid, id_pw, id_capability, id_date, id_time;
+//                        id_mac = cursor.getColumnIndex("MAC");
+//                        id_ssid = cursor.getColumnIndex("SSID");
+//                        id_pw = cursor.getColumnIndex("PW");
+//                        id_capability = cursor.getColumnIndex("CAPABILITY");
+//                        id_date = cursor.getColumnIndex("DATE");
+//                        id_time = cursor.getColumnIndex("TIME");
+//                        String data6;
+//                        // - - - - - - - - - - send device from client to server - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+//
+//                        while (cursor.moveToNext()) {
+//                            data6 = "" + cursor.getString(id_mac) + " " + cursor.getString(id_ssid) + " " + cursor.getString(id_pw) +
+//                                    " " + cursor.getString(id_capability) + " " + cursor.getInt(id_date) +
+//                                    " " + cursor.getInt(id_time);
+//                            Log.i("WifiShare Table",""+data6);
+//
+//                        }
+
                     }
 
                 }
