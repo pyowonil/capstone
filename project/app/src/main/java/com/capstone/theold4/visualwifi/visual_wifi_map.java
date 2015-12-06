@@ -170,7 +170,7 @@ public class visual_wifi_map extends AppCompatActivity
                 String password = edit_password.getText().toString();
                 // TODO 비밀번호 저장
                 {
-                    String query_isExist = "SELECT PW FROM ShareWifi WHERE SSID = '" + mSelectedSSID + "';";
+                    String query_isExist = "SELECT PW FROM WifiShare WHERE SSID = '" + mSelectedSSID + "';";
                     Cursor cursor = mDatabaseRead.rawQuery(query_isExist, null);
 
                     if(cursor.moveToNext()) {
@@ -179,14 +179,14 @@ public class visual_wifi_map extends AppCompatActivity
                         Date now = new Date(System.currentTimeMillis());
                         int date = Integer.parseInt((new SimpleDateFormat("yyyyMMdd")).format(now));
                         int time = Integer.parseInt((new SimpleDateFormat("HHmmss")).format(now));
-                        String query_insert = "REPLACE INTO ShareWifi VALUES ('" + mSelectedMAC + "', '" +
+                        String query_insert = "REPLACE INTO WifiShare VALUES ('" + mSelectedMAC + "', '" +
                                 mSelectedSSID + "', '" + password + "', '" + mSelectedCapability + "', '" +
                                 date + "', '" + time + "');";
                         mDatabaseWrite.execSQL(query_insert);
                         Log.i("[WIFI_MANUAL]", "NOT EXIST - SAVE : " + mSelectedSSID + " " + password);
                     } else {
                         // Exist
-                        String query_update = "UPDATE ShareWifi SET PW = '" + password + "' WHERE MAC = '" +
+                        String query_update = "UPDATE WifiShare SET PW = '" + password + "' WHERE MAC = '" +
                                 mSelectedMAC + "';";
                         mDatabaseWrite.execSQL(query_update);
                         Log.i("[WIFI_MANUAL]", "EXIST -SAVE : " + mSelectedSSID + " " + password);

@@ -77,7 +77,6 @@ public class wifi_setting_synchronize extends Service {
                 }
                 socket1.close();
                 Log.i("[SYNCHRONIZE]", "[Receive data from server] [finish]");
-                Thread.sleep(5000);
 
                 // ****************************************
                 // Server Wifi Device -> Client Wifi Device
@@ -120,6 +119,7 @@ public class wifi_setting_synchronize extends Service {
                 socket2.close();
                 Log.i("[SYNCHRONIZE]", "[Receive device from server] [finish]");
                 Thread.sleep(5000);
+
 
 
 
