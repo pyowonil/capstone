@@ -444,6 +444,8 @@ public class visual_wifi_map extends AppCompatActivity
         return false;
     }
 
+    private APPointAsyncTask task;
+
     @Override
     public void onMyLocationChange(Location location) {
         // TODO 위치 변경 이벤트 처리
@@ -452,7 +454,7 @@ public class visual_wifi_map extends AppCompatActivity
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 18));
                 checkFirstPos = true;
 
-                APPointAsyncTask task = new APPointAsyncTask();
+                task = new APPointAsyncTask();
                 task.execute(new LatLng(location.getLatitude(), location.getLongitude()));
             }
             if(checkComputeComplete) {
@@ -620,7 +622,7 @@ public class visual_wifi_map extends AppCompatActivity
                     int color = Color.argb(30,random.nextInt(256),random.nextInt(256),random.nextInt(256));
                     mSignalInfoList.get(mSignalInfoList.size() - 1).setColor(color);
                     mSignalInfoList.get(mSignalInfoList.size() - 1).setSignal(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
-                    String query2 = "SELECT Latitude, Longitude FROM LocalDevice WHERE MAC = '" + mSignalInfoList.get(0).getMACAddress() + "';";
+                    String query2 = "SELECT Latitude, Longitude FROM LocalDevice WHERE MAC = '" + mSignalInfoList.get(mSignalInfoList.size() - 1).getMACAddress() + "';";
                     Cursor cursor2 = mDatabaseRead.rawQuery(query2,null);
                     while(cursor2.moveToNext()){
                         lat = cursor2.getFloat(cursor2.getColumnIndex("Latitude"));
@@ -895,6 +897,7 @@ public class visual_wifi_map extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        task.cancel(true);
         Log.i("[PAUSE]", "------------------------------------");
         SharedPreferences pref = getSharedPreferences("SAVE_STATE", 0);
         SharedPreferences.Editor edit = pref.edit();
@@ -1008,7 +1011,7 @@ public class visual_wifi_map extends AppCompatActivity
             try
             {
                 publishProgress(new Double(progress));
-                String sqlCount = "SELECT count('''MAC''') FROM LocalData;";
+                String sqlCount = "SELECT count(DISTINCT MAC) FROM LocalData;";
                 Cursor count = db_r.rawQuery(sqlCount, null);
                 while(count.moveToNext()){
                     total = count.getInt(0);
