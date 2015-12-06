@@ -668,7 +668,7 @@ public class visual_wifi_map extends AppCompatActivity
             } else if(mSelectedItem == getResources().getString(R.string.wifi_upload)) {
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
                 setDrawerListItems();
-                // - - - - - - - - - - WIFI 업로드 선ㄴ택 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                // - - - - - - - - - - WIFI 업로드 선택 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 alertWifiUpload();
             } else if(mSelectedItem == getResources().getString(R.string.wifi_auto)) {
                 mIsAutoConnection = true;
