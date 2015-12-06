@@ -64,7 +64,7 @@
 
     <!-- Server Strings -->
     <string name="server_ip">165.246.43.250</string>
-    <integer name="server_port">8888</integer>
+    <integer name="server_port">5555</integer>
     <integer name="connect_timeout">10000</integer> <!-- ms -->
 
     <!-- Google Map API PermissionUtils Strings -->
