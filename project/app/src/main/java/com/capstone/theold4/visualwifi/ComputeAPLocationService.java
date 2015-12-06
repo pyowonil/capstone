@@ -37,6 +37,8 @@ public class ComputeAPLocationService extends Service implements Runnable {
         super.onCreate();
         myThread = new Thread(this);
         myThread.start();
+
+
     }
     public void run(){
         helper = new database_manager(this);
@@ -156,6 +158,7 @@ public class ComputeAPLocationService extends Service implements Runnable {
         catch(SQLiteException sqlE){
             sqlE.printStackTrace();
         }
+        stopSelf();
     }// run() end
 
     public IBinder onBind(Intent arg0){
