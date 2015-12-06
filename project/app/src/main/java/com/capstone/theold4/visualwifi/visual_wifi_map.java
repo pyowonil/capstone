@@ -643,10 +643,6 @@ public class visual_wifi_map extends AppCompatActivity
             if(mSelectedItem == getResources().getString(R.string.wifi_setting)) {
                 // [DONE] wifi setting과 관련된 리스트를 보여준다
                 setDrawerListItems();
-            } else if(mSelectedItem == getResources().getString(R.string.filtering)) {
-                // [] filtering과 관련된 리스트를 보여준다.
-                // TODO 아래의 closeDrawer부분에 새로운 리스트를 보여주는 코드 필요
-                mDrawerLayout.closeDrawer(mDrawerList); // closed
             } else if (mSelectedItem == getResources().getString(R.string.editor)) {
                 // [DONE] 새로운 에디터 액티비티를 실행한다.
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
@@ -759,7 +755,6 @@ public class visual_wifi_map extends AppCompatActivity
             mDrawerListItems.add(getResources().getString(R.string.back));
         } else {
             mDrawerListItems.add(getResources().getString(R.string.wifi_setting));
-            mDrawerListItems.add(getResources().getString(R.string.filtering));
             mDrawerListItems.add(getResources().getString(R.string.editor));
             mDrawerListItems.add(getResources().getString(R.string.guide));
         }
