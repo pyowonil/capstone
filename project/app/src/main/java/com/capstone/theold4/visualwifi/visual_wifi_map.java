@@ -22,6 +22,7 @@ import android.location.Location;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -49,6 +50,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -305,7 +312,9 @@ public class visual_wifi_map extends AppCompatActivity
                     String query_find = "SELECT * FROM WifiShare WHERE MAC ='" + macs[which] + "';";
                     Cursor cursor = mDatabaseRead.rawQuery(query_find, null);
                     if(cursor.moveToNext()) {
-                        // 결과 있음
+                        UploadAsyncTask task = new UploadAsyncTask();
+                        task.execute(macs[which]);
+                        // 결과
                         // MAC : macs[which]
                         // SSID : items[which]
                         // PW : cursor.getString(cursor.getColumnIndex("PW"))
@@ -884,4 +893,57 @@ public class visual_wifi_map extends AppCompatActivity
         edit.commit();
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 액티비티 재시작시 변수 복구 (onPause) = = = = = = = = = =
+
+    public class UploadAsyncTask extends AsyncTask<String,String, Integer > {
+        final String ServerIP = getResources().getString(R.string.server_ip);
+        final int ServerPORT = getResources().getInteger(R.integer.server_port);
+        final int TIMEOUT = getResources().getInteger(R.integer.connect_timeout);
+
+        protected Integer doInBackground(String... param){
+
+            try {
+                Socket socket = new Socket();
+                SocketAddress socketAddress = new InetSocketAddress(ServerIP, ServerPORT);
+                socket.connect(socketAddress, TIMEOUT);
+                if (!socket.isConnected()) {
+                    Log.i("[SYNCHRONIZE]", "Connect socket fail");
+                } else {
+                    DataOutputStream dataOutputStream3 = new DataOutputStream(socket.getOutputStream());
+                    DataInputStream dataInputStream3 = new DataInputStream(socket.getInputStream());
+
+                    // 사용할 변수들
+
+                    String query3 = "SELECT * FROM WifiShare WHERE MAC='"+param[0]+"';";
+                    Log.i("param", " asnctask's param : " + query3);
+                    Cursor cursor = mDatabaseRead.rawQuery(query3, null);
+                    int id_mac, id_ssid, id_pw, id_capability, id_date, id_time;
+                    id_mac = cursor.getColumnIndex("MAC");
+                    id_ssid = cursor.getColumnIndex("SSID");
+                    id_pw = cursor.getColumnIndex("PW");
+                    id_capability = cursor.getColumnIndex("CAPABILITY");
+                    id_date = cursor.getColumnIndex("DATE");
+                    id_time = cursor.getColumnIndex("TIME");
+                    String data;
+                    // - - - - - - - - - - send data from client to server - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                    Log.i("[SYNCHRONIZE]", "[Send share to server] [start]");
+                    dataOutputStream3.writeUTF("Share_up");
+                    cursor.moveToFirst();
+                    data = "" + cursor.getString(id_mac) + "\t" + cursor.getString(id_ssid) + "\t" + cursor.getString(id_pw) +
+                            "\t" + cursor.getString(id_capability) + "\t" + cursor.getInt(id_date) + "\t" + cursor.getInt(id_time);
+                    dataOutputStream3.writeUTF(data);
+
+                    Log.i("[SYNCHRONIZE]", "[Send share to server] [finish]");
+                }
+                socket.close();
+            }
+            catch(SQLiteException sqlE){
+
+            }
+            catch(IOException ioE){
+
+            }
+
+           return 0;
+        }
+    }
 }
