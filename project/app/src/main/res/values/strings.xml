@@ -21,7 +21,6 @@
         <string name="wifi_collector_run">데이터 수집</string>
         <string name="wifi_collector_stop">데이터 수집 종료</string>
     <!-- Level 1 -->
-    <string name="filtering">필터링</string>
     <string name="editor">에디터</string>
     <string name="guide">도움말</string>
 
