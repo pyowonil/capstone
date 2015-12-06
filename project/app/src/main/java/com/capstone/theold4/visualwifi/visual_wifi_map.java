@@ -173,7 +173,7 @@ public class visual_wifi_map extends AppCompatActivity
                     String query_isExist = "SELECT PW FROM WifiShare WHERE SSID = '" + mSelectedSSID + "';";
                     Cursor cursor = mDatabaseRead.rawQuery(query_isExist, null);
 
-                    if(cursor.moveToNext()) {
+                    if(!cursor.moveToNext()) {
                         // Not Exist
                         // 시간 저장
                         Date now = new Date(System.currentTimeMillis());
@@ -189,12 +189,14 @@ public class visual_wifi_map extends AppCompatActivity
                         String query_update = "UPDATE WifiShare SET PW = '" + password + "' WHERE MAC = '" +
                                 mSelectedMAC + "';";
                         mDatabaseWrite.execSQL(query_update);
-                        Log.i("[WIFI_MANUAL]", "EXIST -SAVE : " + mSelectedSSID + " " + password);
+                        Log.i("[WIFI_MANUAL]", "EXIST - SAVE : " + mSelectedSSID + " " + password);
                     }
 
                     cursor = mDatabaseRead.rawQuery(query_isExist, null);
                     if(cursor.moveToNext()) {
                         Log.i("[WIFI_MANUAL_DATABASE]", cursor.getString(cursor.getColumnIndex("PW")));
+                    } else {
+                        Log.i("[WIFI_MANUAL_DATABASE]", "FAIL");
                     }
                 }
 
@@ -298,8 +300,6 @@ public class visual_wifi_map extends AppCompatActivity
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Log.i("[WIFI Upload]", items[which]);
-
                 // 데이터베이스에서 검색하여 모든 내용을 받아오기
                 {
                     String query_find = "SELECT * FROM WifiShare WHERE MAC ='" + macs[which] + "';";
@@ -311,6 +311,7 @@ public class visual_wifi_map extends AppCompatActivity
                         // PW : cursor.getString(cursor.getColumnIndex("PW"))
                         // ~~~
                         // TODO 업로드 서비스 시작
+                        Log.i("[WIFI Upload]", items[which] + " " + macs[which] + " " + cursor.getString(cursor.getColumnIndex("PW")));
                     } else {
                         // 결과 없음 ... 에러
                         // TODO 에러 처리
