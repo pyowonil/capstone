@@ -41,49 +41,57 @@ public class MarketLink extends Activity {
                 imageView.setImageResource(R.drawable.device01);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=2472103&keyword=%B0%F8%C0%AF%B1%E2");
-                textView.setText(R.string.device01_detail + "\n" + R.string.device01_info);
+                textView.setText(getResources().getString(R.string.device01_detail) + "\n" +
+                        getResources().getString(R.string.device01_info));
                 break;
             case 1:
                 imageView.setImageResource(R.drawable.device02);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=2463749&cate=112804");
-                textView.setText(R.string.device02_detail +"\n" + R.string.device02_info);
+                textView.setText(getResources().getString(R.string.device02_detail) + "\n" +
+                        getResources().getString(R.string.device02_info));
                 break;
             case 2:
                 imageView.setImageResource(R.drawable.device03);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=2754623&cate=112804");
-                textView.setText(R.string.device03_detail +"\n" + R.string.device03_info);
+                textView.setText(getResources().getString(R.string.device03_detail) + "\n" +
+                        getResources().getString(R.string.device03_info));
                 break;
             case 3:
                 imageView.setImageResource(R.drawable.device04);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=1957655&cate=112804");
-                textView.setText(R.string.device04_detail +"\n" + R.string.device04_info);
+                textView.setText(getResources().getString(R.string.device04_detail) + "\n" +
+                        getResources().getString(R.string.device04_info));
                 break;
             case 4:
                 imageView.setImageResource(R.drawable.device05);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=3275636&cate=112804");
-                textView.setText(R.string.device05_detail +"\n" + R.string.device05_info);
+                textView.setText(getResources().getString(R.string.device05_detail) + "\n" +
+                        getResources().getString(R.string.device05_info));
                 break;
             case 5:
-                imageView.setImageResource(R.drawable.device03);
+                imageView.setImageResource(R.drawable.device06);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=2754597&keyword=%B0%F8%C0%AF%B1%E2");
-                textView.setText(R.string.device03_detail +"\n" + R.string.device03_info);
+                textView.setText(getResources().getString(R.string.device06_detail) + "\n" +
+                        getResources().getString(R.string.device06_info));
                 break;
             case 6:
-                imageView.setImageResource(R.drawable.device04);
+                imageView.setImageResource(R.drawable.device07);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=2214352&keyword=%B0%F8%C0%AF%B1%E2");
-                textView.setText(R.string.device04_detail +"\n" + R.string.device04_info);
+                textView.setText(getResources().getString(R.string.device07_detail) + "\n" +
+                        getResources().getString(R.string.device07_info));
                 break;
             case 7:
-                imageView.setImageResource(R.drawable.device05);
+                imageView.setImageResource(R.drawable.device08);
                 imageView.setOnClickListener(onClickListener);
                 uri = Uri.parse("http://prod.danawa.com/info/?pcode=1533180&keyword=%B0%F8%C0%AF%B1%E2");
-                textView.setText(R.string.device05_detail +"\n" + R.string.device05_info);
+                textView.setText(getResources().getString(R.string.device08_detail) + "\n" +
+                        getResources().getString(R.string.device08_info));
                 break;
 
         }
