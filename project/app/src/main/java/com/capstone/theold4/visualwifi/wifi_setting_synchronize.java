@@ -32,17 +32,18 @@ public class wifi_setting_synchronize extends Service {
                 // 서버에 연결
                 Log.i("[SYNCHRONIZE]", "Connect to server start");
                 final String ServerIP = getResources().getString(R.string.server_ip);
-                Log.i("Resource", getResources().getString(R.string.server_ip));
                 final int ServerPORT = getResources().getInteger(R.integer.server_port);
                 final int TIMEOUT = getResources().getInteger(R.integer.connect_timeout);
 
-                Log.i("[SYNCHRONIZE]", "Receive data from server start");
+                // ****************************************
+                // Server Wifi Data -> Client Wifi Data
+                // ****************************************
+                Log.i("[SYNCHRONIZE]", "[Receive data from server] [start]");
                 Socket socket1 = new Socket();
                 SocketAddress socketAddress1 = new InetSocketAddress(ServerIP, ServerPORT);
                 socket1.connect(socketAddress1, TIMEOUT);
                 if(!socket1.isConnected()) {
-                    Log.i("[SYNCHRONIZE]", "Connect to server fail");
-                    // TODO 서버 연결 실패시 알림
+                    Log.i("[SYNCHRONIZE]", "Connect socket1 fail");
                 } else {
                     // - - - - - - - - - - receive data from server to client - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                     DataOutputStream dataOutputStream = new DataOutputStream(socket1.getOutputStream());
@@ -58,8 +59,6 @@ public class wifi_setting_synchronize extends Service {
                             break;
                         }
                         if(data.equals("END"))break;
-
-
 
                         StringTokenizer token = new StringTokenizer(data, "\t");
                         String mac = token.nextToken();
@@ -77,21 +76,23 @@ public class wifi_setting_synchronize extends Service {
 
                 }
                 socket1.close();
-                Log.i("[SYNCHRONIZE]", "Receive data from server finish");
+                Log.i("[SYNCHRONIZE]", "[Receive data from server] [finish]");
+                Thread.sleep(5000);
 
-                Thread.sleep(2000);
-                Log.i("[SYNCHRONIZE]", "Receive device data from server start");
+                // ****************************************
+                // Server Wifi Device -> Client Wifi Device
+                // ****************************************
+                Log.i("[SYNCHRONIZE]", "[Receive device from server] [start]");
                 Socket socket2 = new Socket();
                 SocketAddress socketAddress2 = new InetSocketAddress(ServerIP, ServerPORT);
                 socket2.connect(socketAddress2, TIMEOUT);
                 if(!socket2.isConnected()) {
-                    Log.i("[SYNCHRONIZE]", "Connect to server fail");
-                    // TODO 서버 연결 실패시 알림
+                    Log.i("[SYNCHRONIZE]", "Connect socket2 fail");
                 } else {
                     DataOutputStream dataOutputStream = new DataOutputStream(socket2.getOutputStream());
                     DataInputStream dataInputStream = new DataInputStream(socket2.getInputStream());
 
-                    dataOutputStream.writeUTF("WifiDevice");
+                    dataOutputStream.writeUTF("WifiDevice_down");
                     String data;
                     String query;
                     while (true) {
@@ -102,36 +103,37 @@ public class wifi_setting_synchronize extends Service {
                             break;
                         }
                         if(data.equals("END"))break;
-                        Log.i("dddd",data);
                         StringTokenizer token = new StringTokenizer(data, "\t");
                         String mac = token.nextToken();
                         String lat = token.nextToken();
                         String lon = token.nextToken();
                         String ssid = token.nextToken();
-                        String pw = token.nextToken();
                         String date = token.nextToken();
                         String time = token.nextToken();
 
                         query = "REPLACE INTO WifiDevice VALUES " + "('" + mac + "', '" + lat + "', '" + lon +
-                                "', '" + ssid + "', '" + pw + "', '" + date + "', '" + time + "');";
+                                "', '" + ssid + "', '" + date + "', '" + time + "');";
                         mDatabaseWrite.execSQL(query);
                     }
 
                 }
                 socket2.close();
-                Log.i("[SYNCHRONIZE]", "Receive device data from server finish");
-
+                Log.i("[SYNCHRONIZE]", "[Receive device from server] [finish]");
                 Thread.sleep(5000);
+
+
+
+                // ****************************************
+                // Client Local Data  ->  Server Wifi Data
+                // ****************************************
                 Socket socket3 = new Socket();
                 SocketAddress socketAddress3 = new InetSocketAddress(ServerIP, ServerPORT);
                 socket3.connect(socketAddress3, TIMEOUT);
                 if(!socket3.isConnected()) {
-                    Log.i("[SYNCHRONIZE]", "Connect to server fail");
-                    // TODO 서버 연결 실패시 알림
+                    Log.i("[SYNCHRONIZE]", "Connect socket3 fail");
                 } else {
                     DataOutputStream dataOutputStream3 = new DataOutputStream(socket3.getOutputStream());
                     DataInputStream dataInputStream3 = new DataInputStream(socket3.getInputStream());
-                    Log.i("[SYNCHRONIZE]", "Connect to server finish");
 
                     // 사용할 변수들
                     String query3 = "SELECT * FROM LocalData;";
@@ -146,25 +148,22 @@ public class wifi_setting_synchronize extends Service {
                     id_time = cursor.getColumnIndex("TIME");
                     String data;
                     // - - - - - - - - - - send data from client to server - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                    Log.i("[SYNCHRONIZE]", "Send data to server start");
+                    Log.i("[SYNCHRONIZE]", "[Send data to server] [start]");
                     dataOutputStream3.writeUTF("WifiData");
                     while (cursor.moveToNext()) {
                         data = "" + cursor.getString(id_mac) + "\t" + cursor.getFloat(id_latitude) + "\t" + cursor.getFloat(id_longitude) +
                                 "\t" + cursor.getString(id_ssid) + "\t" + cursor.getInt(id_rssi) + "\t" + cursor.getInt(id_date) +
                                 "\t" + cursor.getInt(id_time);
-                        Log.i("dbb", data);
                         dataOutputStream3.writeUTF(data);
                     }
                     mDatabaseRead.execSQL("DELETE FROM LocalData");
-                    Log.i("[SYNCHRONIZE]", "Send data to server finish");
+                    Log.i("[SYNCHRONIZE]", "[Send data to server] [finish]");
 
                 }
                 socket3.close();
-
             }catch(Exception e) {
                 e.printStackTrace();
             }finally {
-                // TODO 종료전 마지막 작업
                 stopSelf(mStartId);
             }
         }
@@ -179,7 +178,6 @@ public class wifi_setting_synchronize extends Service {
             mDatabaseWrite = mDatabaseManager.getWritableDatabase();
             mDatabaseRead = mDatabaseManager.getReadableDatabase();
         } catch (SQLiteException e) {
-            // TODO 데이터베이스 에러처리 필요
         }
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 액티비티 시작 (onCreate) = = = = = = = = = =

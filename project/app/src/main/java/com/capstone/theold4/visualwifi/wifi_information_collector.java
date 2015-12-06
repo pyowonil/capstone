@@ -82,13 +82,11 @@ public class wifi_information_collector extends Service implements LocationListe
                         String MAC = scanresult.BSSID;
                         String ssid = scanresult.SSID;
                         int rssi = scanresult.level;
-                        //String capability = scanresult.capabilities;
-                        String pw = "";
 
                         String head_query1 = "INSERT OR IGNORE INTO LocalDevice VALUES ('";
                         String head_query2 = "REPLACE INTO LocalData VALUES ('";
                         String tail_query1 = MAC + "', '" + lat + "', '" + lng + "', '" + ssid +
-                                "', '" + pw + "', '" + date + "', '" + time + "');";
+                                "', '" + date + "', '" + time + "');";
                         String tail_query2 = MAC + "', '" + lat + "', '" + lng + "', '" + ssid +
                                 "', '" + rssi + "', '" + date + "', '" + time + "');";
 

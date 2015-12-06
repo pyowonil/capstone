@@ -26,7 +26,7 @@ public class database_manager extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE WifiData (MAC TEXT, Latitude float, Longitude float, SSID TEXT, " +
                 "RSSI INTEGER, DATE INTEGER, TIME INTEGER, CONSTRAINT data_uc UNIQUE(MAC, Latitude, Longitude ));");
         db.execSQL("CREATE TABLE WifiShare (MAC TEXT PRIMARY KEY, SSID TEXT, PW TEXT, CAPABILITY TEXT, " +
-                "DATE INTEGER, TIME INTEGER;");
+                "DATE INTEGER, TIME INTEGER);");
     }
 
     @Override
