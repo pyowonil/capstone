@@ -11,26 +11,31 @@ import android.os.Handler;
 
 public class Intro extends Activity {
 
+    Handler h;
+
     @Override
     public void onCreate(Bundle savedIntanceState) {
         super.onCreate(savedIntanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_splash);
-
-        Loading();
+        h = new Handler();
+        h.postDelayed(irun, 1000);
     }
+    Runnable irun = new Runnable() {
+        @Override
+        public void run() {
+            Intent intent = new Intent(getApplicationContext(), visual_wifi_map.class);
+            startActivity(intent);
+            finish();
 
-    private void Loading(){
-        Handler handler = new Handler(){
-            public void handleMessage (Message msg){
-                Intent intent = new Intent(getApplicationContext(), visual_wifi_map.class);
-                startActivity(intent);
-                finish();
+            //fade in -> fade out
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        }
+    };
 
-                //fade in -> fade out
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            }
-        };
-        handler.sendEmptyMessageDelayed(0, 1000);
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        h.removeCallbacks(irun);
     }
 }
