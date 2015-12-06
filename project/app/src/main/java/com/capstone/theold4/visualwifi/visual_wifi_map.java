@@ -49,9 +49,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -73,7 +75,7 @@ public class visual_wifi_map extends AppCompatActivity
     // - - - - - - - - - - WIFI MANUAL OPERATION - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     private WifiManager mWifiManager;
     private List<ScanResult> mScanResult;
-    private String mSelectedSSID, mSelectedCapability;
+    private String mSelectedSSID, mSelectedCapability, mSelectedMAC;
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -97,24 +99,48 @@ public class visual_wifi_map extends AppCompatActivity
     private void alertWifiManualList() {
         mScanResult = mWifiManager.getScanResults();
         Collections.sort(mScanResult, mScanResultComparator);
-        // TODO SSID 중복 처리 및 오픈 상태의 와이파이(비밀번호가 필요하지 않은)에 대한 로그인창 처리 필요
         // TODO (!) 표시도 필요할듯
-        final String[] scanResult = new String[mScanResult.size()];
+        final String[] scanResults;
         {
+            final String[] scanResult = new String[mScanResult.size()];
             int size = mScanResult.size();
+            int len = 0;
+
             for (int i = 0; i < size; i++) {
                 ScanResult scanresult = mScanResult.get(i);
-                scanResult[i] = scanresult.SSID;
+                if(scanresult.SSID.equals("")) continue;
+                boolean isDuplication = false;
+                for(int j = 0; j < i; j++) {
+                    if(scanresult.SSID.equals(mScanResult.get(j).SSID)) {
+                        isDuplication = true;
+                        break;
+                    }
+                }
+                if(!isDuplication) {
+                    // TODO 강도 표현
+                    scanResult[len] = scanresult.SSID;
+                    len += 1;
+                }
+            }
+            scanResults = new String[len];
+            for(int i=0; i<len; i++) {
+                scanResults[i] = scanResult[i];
             }
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(visual_wifi_map.this);
         builder.setTitle(getResources().getString(R.string.wifi_manual_list_title));
-        builder.setItems(scanResult, new DialogInterface.OnClickListener() {
+        builder.setItems(scanResults, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                mSelectedSSID = mScanResult.get(which).SSID;
-                mSelectedCapability = mScanResult.get(which).capabilities;
+                mSelectedSSID = scanResults[which];
+                for (ScanResult scanresult : mScanResult) {
+                    if (scanresult.equals(mSelectedSSID)) {
+                        mSelectedCapability = scanresult.capabilities;
+                        mSelectedMAC = scanresult.BSSID;
+                        break;
+                    }
+                }
                 dialog.dismiss();
                 if (mSelectedCapability.contains("OPEN") || mSelectedCapability.equals("[ESS]")) {
                     Log.i("[WIFI_MANAUAL]", "try connect ssid=" + mSelectedSSID + " capability=" + mSelectedCapability);
@@ -122,6 +148,12 @@ public class visual_wifi_map extends AppCompatActivity
                 } else {
                     alertWifiLogin();
                 }
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.wifi_manual_list_title_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
             }
         });
         builder.show();
@@ -136,7 +168,37 @@ public class visual_wifi_map extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which) {
                 EditText edit_password = (EditText) loginView.findViewById(R.id.password);
                 String password = edit_password.getText().toString();
-                Log.i("[WIFI_MANAUAL]", "try connect ssid=" + mSelectedSSID + " password=" + password + " capability=" + mSelectedCapability);
+                // TODO 비밀번호 저장
+                {
+                    String query_isExist = "SELECT PW FROM ShareWifi WHERE SSID = '" + mSelectedSSID + "';";
+                    Cursor cursor = mDatabaseRead.rawQuery(query_isExist, null);
+
+                    if(cursor.moveToNext()) {
+                        // Not Exist
+                        // 시간 저장
+                        Date now = new Date(System.currentTimeMillis());
+                        int date = Integer.parseInt((new SimpleDateFormat("yyyyMMdd")).format(now));
+                        int time = Integer.parseInt((new SimpleDateFormat("HHmmss")).format(now));
+                        String query_insert = "REPLACE INTO ShareWifi VALUES ('" + mSelectedMAC + "', '" +
+                                mSelectedSSID + "', '" + password + "', '" + mSelectedCapability + "', '" +
+                                date + "', '" + time + "');";
+                        mDatabaseWrite.execSQL(query_insert);
+                        Log.i("[WIFI_MANUAL]", "NOT EXIST - SAVE : " + mSelectedSSID + " " + password);
+                    } else {
+                        // Exist
+                        String query_update = "UPDATE ShareWifi SET PW = '" + password + "' WHERE MAC = '" +
+                                mSelectedMAC + "';";
+                        mDatabaseWrite.execSQL(query_update);
+                        Log.i("[WIFI_MANUAL]", "EXIST -SAVE : " + mSelectedSSID + " " + password);
+                    }
+
+                    cursor = mDatabaseRead.rawQuery(query_isExist, null);
+                    if(cursor.moveToNext()) {
+                        Log.i("[WIFI_MANUAL_DATABASE]", cursor.getString(cursor.getColumnIndex("PW")));
+                    }
+                }
+
+                Log.i("[WIFI_MANUAL]", "try connect ssid=" + mSelectedSSID + " password=" + password + " capability=" + mSelectedCapability);
                 connect(mSelectedSSID, password, mSelectedCapability);
             }
         });
@@ -209,6 +271,29 @@ public class visual_wifi_map extends AppCompatActivity
         return success;
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = WIFI Connection = = = = = = = = = =
+
+    // = = = = = = = = = = WIFI 업로드 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    private void alertWifiUpload() {
+        final String[] items = {"딸기", "사과", "귤", "체리"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(visual_wifi_map.this);
+        builder.setTitle(getResources().getString(R.string.wifi_upload_title));
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("[WIFI Upload]", items[which]);
+
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.wifi_upload_title_cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
+    // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = WIFI 업로드드 =  = = = = = = = =
 
     // = = = = = = = = = = WIFI Information Collector = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     private boolean mIsInformationCollection;
@@ -541,9 +626,10 @@ public class visual_wifi_map extends AppCompatActivity
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
                 setDrawerListItems();
             } else if(mSelectedItem == getResources().getString(R.string.wifi_upload)) {
-
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
                 setDrawerListItems();
+                // - - - - - - - - - - WIFI 업로드 선ㄴ택 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                alertWifiUpload();
             } else if(mSelectedItem == getResources().getString(R.string.wifi_auto)) {
                 mIsAutoConnection = true;
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
@@ -750,9 +836,13 @@ public class visual_wifi_map extends AppCompatActivity
         Log.i("[PAUSE]", "------------------------------------");
         SharedPreferences pref = getSharedPreferences("SAVE_STATE", 0);
         SharedPreferences.Editor edit = pref.edit();
-        LatLng position = mMap.getCameraPosition().target;
-        mInitLocation_latitude = (float) position.latitude;
-        mInitLocation_longitude = (float) position.longitude;
+        try {
+            LatLng position = mMap.getCameraPosition().target;
+            mInitLocation_latitude = (float) position.latitude;
+            mInitLocation_longitude = (float) position.longitude;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         edit.putFloat("mInitLocation_latitude", mInitLocation_latitude);
         edit.putFloat("mInitLocation_longitude", mInitLocation_longitude);
         edit.putFloat("mInitLocation_zoom", mInitLocation_zoom);

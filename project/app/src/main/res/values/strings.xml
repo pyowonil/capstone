@@ -31,10 +31,15 @@
 
     <!-- (MANUAL)WIFI Scan Result List Strings -->
     <string name="wifi_manual_list_title">와이파이 리스트</string>
+    <string name="wifi_manual_list_title_cancel">취소</string>
     <string name="wifi_manual_login_title">와이파이 로그인</string>
     <string name="wifi_manual_login_button_ok">확인</string>
     <string name="wifi_manual_login_button_cancel">취소</string>
     <string name="alert_wifi_login_password_hint">비밀번호</string>
+
+    <!-- WIFI Upload Strings -->
+    <string name="wifi_upload_title">업로드 리스트</string>
+    <string name="wifi_upload_title_cancel">취소</string>
 
     <!-- Device Strings -->
     <string name="device01_name">Device01</string>
