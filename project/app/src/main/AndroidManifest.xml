@@ -42,7 +42,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".visual_wifi_map"
+        <activity android:name=".Intro"
             android:label="@string/app_name"
             android:screenOrientation="portrait"> <!-- 디바이스 세로 고정 -->
             <intent-filter>
@@ -52,11 +52,28 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".visual_wifi_map"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"> <!-- 디바이스 세로 고정 -->
+            <!--
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            -->
+        </activity>
+
         <activity android:name=".editor"
             android:label="@string/app_editor_name"
             android:screenOrientation="portrait"> <!-- 디바이스 세로 고정 -->
         </activity>
         <activity android:name=".MarketLink">
+        </activity>
+
+        <activity android:name=".Guide"
+            android:label="@string/app_guide_name"
+            android:screenOrientation="portrait"> <!-- 디바이스 세로 고정 -->
         </activity>
 
         <service android:name=".wifi_connection_auto" android:enabled="true">
