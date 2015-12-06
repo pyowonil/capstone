@@ -610,6 +610,10 @@ public class visual_wifi_map extends AppCompatActivity
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
+            } else if(mSelectedItem == getResources().getString(R.string.guide)) {
+                mDrawerLayout.closeDrawer(mDrawerList); // closed
+                Intent intent = new Intent(visual_wifi_map.this, Guide.class);
+                startActivity(intent);
             }
         }
     }
@@ -636,6 +640,7 @@ public class visual_wifi_map extends AppCompatActivity
             mDrawerListItems.add(getResources().getString(R.string.wifi_setting));
             mDrawerListItems.add(getResources().getString(R.string.filtering));
             mDrawerListItems.add(getResources().getString(R.string.editor));
+            mDrawerListItems.add(getResources().getString(R.string.guide));
         }
 
         mDrawerListAdapter.notifyDataSetChanged();
