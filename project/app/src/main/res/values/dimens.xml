@@ -26,4 +26,22 @@
     <dimen name="item_font_size_small">16sp</dimen>
     <dimen name="item_font_size_tumblr">30sp</dimen>
     <dimen name="item_font_size_path">18sp</dimen>
+
+    <dimen name="progress_arc_stroke_width">2dp</dimen>
+    <dimen name="fab_content_size">24dp</dimen>
+    <dimen name="half_fab_content_size">12dp</dimen>
+    <dimen name="fab_size_normal">56dp</dimen>
+    <dimen name="fab_size_mini">40dp</dimen>
+    <dimen name="fab_translation_z_pressed">6dp</dimen>
+    <integer name="default_cycle_duration">2000</integer>
+    <dimen name="futuresimple_fab_shadow_offset">3dp</dimen>
+    <dimen name="avatarSize">50dp</dimen>
+    <dimen name="photo_text_left_padding">20dp</dimen>
+    <dimen name="photo_description_side_padding">20dp</dimen>
+    <dimen name="photo_desc_title">18sp</dimen>
+    <dimen name="photo_desc_author">14sp</dimen>
+    <dimen name="overflow_icon_size">40dp</dimen>
+    <dimen name="fab_margin">26dp</dimen>
+    <dimen name="fab_top_margin">-32dp</dimen>
+    <dimen name="fab_elevation">4dp</dimen>
 </resources>

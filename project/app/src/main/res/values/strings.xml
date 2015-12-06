@@ -73,6 +73,9 @@
     <integer name="server_port">5555</integer>
     <integer name="connect_timeout">10000</integer> <!-- ms -->
 
+    <!-- Upload String -->
+    <string name="child_count_error">FABProgressCircle layout must only contain one child.</string>
+
     <!-- Google Map API PermissionUtils Strings -->
     <string name="location_permission_denied"><![CDATA[This sample requires location permission to enable the \\\'my location\\\' layer. Please try again and grant access to use the location.\\nIf the permission has been permanently denied, it can be enabled from the System Settings &gt; Apps &gt; \\\'Google Maps API Demos\\\'.]]></string>
     <string name="permission_required_toast">Location permission is required for this demo.</string>
