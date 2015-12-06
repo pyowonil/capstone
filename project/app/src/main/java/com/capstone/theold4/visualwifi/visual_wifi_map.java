@@ -274,7 +274,24 @@ public class visual_wifi_map extends AppCompatActivity
 
     // = = = = = = = = = = WIFI 업로드 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
     private void alertWifiUpload() {
-        final String[] items = {"딸기", "사과", "귤", "체리"};
+        // 데이터베이스에서 검색한 결과를 리스트에 출력
+        ArrayList<String> items_ssid = new ArrayList<String>();
+        ArrayList<String> items_mac = new ArrayList<String>();
+        {
+            String query_find = "SELECT * FROM WifiShare;";
+            Cursor cursor = mDatabaseRead.rawQuery(query_find, null);
+            int id_ssid = cursor.getColumnIndex("SSID");
+            int id_mac = cursor.getColumnIndex("MAC");
+            while(cursor.moveToNext()) {
+                items_ssid.add(cursor.getString(id_ssid));
+                items_mac.add(cursor.getString(id_mac));
+            }
+        }
+        final String[] items = new String[items_ssid.size()];
+        final String[] macs = new String[items_mac.size()];
+        items_ssid.toArray(items);
+        items_mac.toArray(macs);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(visual_wifi_map.this);
         builder.setTitle(getResources().getString(R.string.wifi_upload_title));
         builder.setItems(items, new DialogInterface.OnClickListener() {
@@ -282,6 +299,22 @@ public class visual_wifi_map extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which) {
                 Log.i("[WIFI Upload]", items[which]);
 
+                // 데이터베이스에서 검색하여 모든 내용을 받아오기
+                {
+                    String query_find = "SELECT * FROM WifiShare WHERE MAC ='" + macs[which] + "';";
+                    Cursor cursor = mDatabaseRead.rawQuery(query_find, null);
+                    if(cursor.moveToNext()) {
+                        // 결과 있음
+                        // MAC : macs[which]
+                        // SSID : items[which]
+                        // PW : cursor.getString(cursor.getColumnIndex("PW"))
+                        // ~~~
+                        // TODO 업로드 서비스 시작
+                    } else {
+                        // 결과 없음 ... 에러
+                        // TODO 에러 처리
+                    }
+                }
                 dialog.dismiss();
             }
         });
