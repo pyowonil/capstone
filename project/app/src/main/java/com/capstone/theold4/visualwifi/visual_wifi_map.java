@@ -427,7 +427,18 @@ public class visual_wifi_map extends AppCompatActivity
         if(location != null){
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 17));
             if(checkComputeComplete) {
-                drawSignal();
+                if(prevPos == null){
+                    prevPos = new LatLng(location.getLatitude(), location.getLongitude());
+                    drawSignal();
+                }else{
+                    Location.distanceBetween(prevPos.latitude,prevPos.longitude,
+                            location.getLatitude(),location.getLongitude(),distance);
+                    if(distance[0] >= 5) {
+                        prevPos = new LatLng(location.getLatitude(), location.getLongitude());
+                        drawSignal();
+                    }
+                }
+
             }
         }
         return false;
@@ -463,37 +474,6 @@ public class visual_wifi_map extends AppCompatActivity
     @Override
     public void onMapClick(LatLng latLng) {
         // TODO 맵 클릭(짧게) 이벤트 처리
-
-        // TODO WIFI 마커 찍기 --- 다른 적당한 위치에 구현해야 함
-        // 간단하게 구현해봄 (데이터베이스와의 연동을 확인하기 위해서)
-        {
-            mMap.clear();
-            String query = "SELECT * FROM LocalData;";
-            Cursor cursor = mDatabaseRead.rawQuery(query, null);
-            int id_mac, id_latitude, id_longitude, id_ssid, id_rssi, id_date, id_time;
-            id_mac = cursor.getColumnIndex("MAC");
-            id_latitude = cursor.getColumnIndex("Latitude");
-            id_longitude = cursor.getColumnIndex("Longitude");
-            id_ssid = cursor.getColumnIndex("SSID");
-            id_rssi = cursor.getColumnIndex("RSSI");
-            id_date = cursor.getColumnIndex("DATE");
-            id_time = cursor.getColumnIndex("TIME");
-            String data;
-
-            while (cursor.moveToNext()) {
-                data = "" + cursor.getString(id_mac) + " " + cursor.getFloat(id_latitude) + " " + cursor.getFloat(id_longitude) +
-                        " " + cursor.getString(id_ssid) + " " + cursor.getInt(id_rssi) + " " + cursor.getInt(id_date) +
-                        " " + cursor.getInt(id_time);
-                Log.i("[DATALOADING]", data);
-                if(cursor.getString(id_ssid).equals("INHA-WLAN2") ||cursor.getString(id_ssid).equals("INHA-Guest") ) {
-                    LatLng latLngData = new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude));
-                    CircleOptions circleOptions = new CircleOptions().radius(1).strokeWidth(1).strokeColor(Color.argb(150, 0, 50, 200)).fillColor(Color.argb(150, 0, 50, 170)).center(latLngData);
-                    MarkerOptions markerOptions = new MarkerOptions().visible(true).draggable(false).position(latLngData).title(cursor.getString(id_ssid));
-                    mMap.addCircle(circleOptions);
-                    //mMap.addMarker(markerOptions);
-                }
-            }
-        }
     }
     @Override
     public void onMapLongClick(LatLng latLng) {
@@ -618,6 +598,7 @@ public class visual_wifi_map extends AppCompatActivity
                     lat = cursor2.getFloat(cursor2.getColumnIndex("Latitude"));
                     lng = cursor2.getFloat(cursor2.getColumnIndex("Longitude"));
                 }
+                cursor2.close();
                 mSignalInfoList.get(0).setAPPoint(new LatLng(lat, lng));
             }else{
                 String ssid = cursor.getString(id_ssid);
@@ -649,6 +630,7 @@ public class visual_wifi_map extends AppCompatActivity
                 }
             }
         }
+        cursor.close();
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Draw Signal = = = = = = = = = =
 
@@ -1026,13 +1008,14 @@ public class visual_wifi_map extends AppCompatActivity
             try
             {
                 publishProgress(new Double(progress));
-                String sqlCount = "SELECT count(*) FROM LocalDevice;";
+                String sqlCount = "SELECT count('''MAC''') FROM LocalData;";
                 Cursor count = db_r.rawQuery(sqlCount, null);
                 while(count.moveToNext()){
                     total = count.getInt(0);
                 }
+                count.close();
 
-                String sql1 = "SELECT MAC, Latitude, Longitude FROM LocalDevice;";
+                String sql1 = "SELECT MAC, Latitude, Longitude FROM LocalData;";
                 Cursor c = db_r.rawQuery(sql1, null);
                 while (c.moveToNext()) {
                     String _mac = c.getString(c.getColumnIndex("MAC"));
@@ -1114,6 +1097,7 @@ public class visual_wifi_map extends AppCompatActivity
                                 }
                             }  // if else 문, 8점 비교 대입
                         } // while문 Local, Wifi 테이블 8점 잡기
+                        c2.close();
                     }  // for문 end 8점 잡기 완료 ( DB 모두 검색 완료 )
 
                     // 중점 잡기 ( AP 위치 잡기 )
@@ -1127,7 +1111,7 @@ public class visual_wifi_map extends AppCompatActivity
 
                     db_w.execSQL(sql3);
                     progress++;
-                    publishProgress(new Double(progress/total));
+                    publishProgress(new Double(progress));
 
                 }// while문 end  LocalDevice 1개 해당하는 루프
             }
@@ -1139,9 +1123,13 @@ public class visual_wifi_map extends AppCompatActivity
         }
 
         protected void onProgressUpdate(Double... progress) {
-            double ing = progress[0];
-            Toast.makeText(visual_wifi_map.this,"AP Position Compute... " + String.format("%.2f",ing*100) + "%", Toast.LENGTH_SHORT).show();
-            if(ing == 1) this.cancel(true);
+            double ing = progress[0]/total;
+            if(ing == 0){
+                Toast.makeText(visual_wifi_map.this,"AP 위치 계산을 시작합니다.", Toast.LENGTH_SHORT).show();
+            }else if(ing == 1){
+                Toast.makeText(visual_wifi_map.this, "AP 위치 계산을 끝냈습니다.(총 " + total + "개)", Toast.LENGTH_SHORT).show();
+                this.cancel(true);
+            }
         }
 
         protected void onPostExecute(List<LatLng> APPoint) {
