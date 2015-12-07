@@ -465,7 +465,7 @@ public class visual_wifi_map extends AppCompatActivity
                 }else{
                     Location.distanceBetween(prevPos.latitude,prevPos.longitude,
                             location.getLatitude(),location.getLongitude(),distance);
-                    if(distance[0] >= 5) {
+                    if(distance[0] >= 15) {
                         prevPos = new LatLng(location.getLatitude(), location.getLongitude());
                         drawSignal();
                     }
