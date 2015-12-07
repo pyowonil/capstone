@@ -43,7 +43,7 @@ public class wifi_information_collector extends Service implements LocationListe
             final String action = intent.getAction();
             if (action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
                 // TODO 와이파이 스캔 결과 얻기
-                mWifiManager.startScan();
+                //mWifiManager.startScan();
             } else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
                 // TODO 와이파이 ... 이거 필요한가?
             }
@@ -65,6 +65,7 @@ public class wifi_information_collector extends Service implements LocationListe
         @Override
         public void run() {
             try {
+                mWifiManager.startScan();
                 Log.i("[COLLECTOR]", "Start Service" + mLocation.toString());
                 // 위치 저장 // 절삭하면 너무 에러가 많이 남
                 double lat = mLocation.getLatitude();

@@ -582,7 +582,7 @@ public class editor extends AppCompatActivity
         }
     }
 
-    public void onClickDraw(View view) {
+    public void onClickDraw(View v) {
         mLock = false;
         mUiSettings.setAllGesturesEnabled(mLock);
         IS_MAP_MOVEABLE = true;
@@ -591,13 +591,14 @@ public class editor extends AppCompatActivity
             circle.markerDraggable(false);
         }
         hideMenu();
+        v.setSelected(!v.isSelected());
     }
     public void onClickBack(View view) {
         if(!mDrawPoints.isEmpty()) {
             mDrawPoints.remove(mDrawPoints.size()-1);
         }
     }
-    public void onClickLoad(View view) {
+    public void onClickLoad(View v) {
         mLock = true;
         mUiSettings.setAllGesturesEnabled(mLock);
         IS_MAP_MOVEABLE = false;
@@ -607,8 +608,9 @@ public class editor extends AppCompatActivity
         }
         mDeviceListView.setVisibility(View.VISIBLE);
         hideMenu();
+        v.setSelected(!v.isSelected());
     }
-    public void onClickClear(View view) {
+    public void onClickClear(View v) {
         IS_MAP_MOVEABLE = false;
         mDrawPoints.clear();
         for(DraggableCircle circle : mCircles) {
@@ -619,19 +621,21 @@ public class editor extends AppCompatActivity
         mUiSettings.setAllGesturesEnabled(mLock);
         mCurrentMode = mMode.DEFAULT;
     }
-    public void onClickRun(View view) {
+    public void onClickRun(View v) {
         IS_MAP_MOVEABLE = false;
         for(DraggableCircle circle : mCircles) {
             circle.markerDraggable(false);
         }
         hideMenu();
+        v.setSelected(!v.isSelected());
         // 실제 선정된 기기를 통한 연산
         mDrawCanvas.simulate();
         mCurrentMode = mMode.RUN;
     }
-    public void onClickMarket(View view) {
+    public void onClickMarket(View v) {
         IS_MAP_MOVEABLE = false;
         hideMenu();
+        v.setSelected(!v.isSelected());
         if(mDeviceNum == -1){
             Toast.makeText(getApplicationContext(),"디바이스를 선택해 주세요.",Toast.LENGTH_SHORT).show();
         }else{
@@ -641,7 +645,7 @@ public class editor extends AppCompatActivity
             finish();
         }
     }
-    public void onClickExit(View view) {
+    public void onClickExit(View v) {
         IS_MAP_MOVEABLE = false;
         mCurrentMode = mMode.EXIT;
         // Activity 전환

@@ -48,6 +48,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -88,7 +89,7 @@ public class visual_wifi_map extends AppCompatActivity
             final String action = intent.getAction();
             if(action.equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
                 // TODO 와이파이 스캔 결과 얻기
-                mWifiManager.startScan();
+                //mWifiManager.startScan();
             } else if(action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
                 // TODO 와이파이 ... 이거 필요한가?
             }
@@ -487,6 +488,17 @@ public class visual_wifi_map extends AppCompatActivity
         if(!mSignalInfoList.isEmpty()){
             for(SignalInfo signal : mSignalInfoList){
                 if(signal.getMACAddress().equals(marker.getTitle())){
+                    if(!signal.isVisible()){
+                        String[] query2 = {"SELECT Latitude, Longitude, SSID, RSSI FROM LocalData where MAC = '"+ signal.getMACAddress() + "';",
+                                "SELECT Latitude, Longitude, SSID, RSSI FROM WifiData where MAC = '"+ signal.getMACAddress() + "';" };
+                        for(int i=0; i<2; i++){
+                            Cursor cursor2 = mDatabaseRead.rawQuery(query2[i],null);
+                            while(cursor2.moveToNext()){
+                                signal.setSignal(new LatLng(cursor2.getFloat(cursor2.getColumnIndex("Latitude")), cursor2.getFloat(cursor2.getColumnIndex("Longitude"))));
+                            }
+                            cursor2.close();
+                        }
+                    }
                     signal.setVisible();
                 }
             }
@@ -511,7 +523,7 @@ public class visual_wifi_map extends AppCompatActivity
         private Marker AP;
         private List<Circle> signalPoints;
         private int color;
-        private boolean isVisible = true;
+        private boolean isVisible = false;
 
         public SignalInfo(){
             signalPoints = new ArrayList<>();
@@ -529,7 +541,7 @@ public class visual_wifi_map extends AppCompatActivity
             this.APPoint = center;
             this.APRange = mMap.addCircle(new CircleOptions().center(APPoint)
                     .radius(10).strokeWidth(1).strokeColor(Color.argb(100,180,60,60))
-                    .fillColor(Color.argb(100,180,60,60)).visible(true));
+                    .fillColor(Color.argb(100,180,60,60)).visible(isVisible));
             this.AP = mMap.addMarker(new MarkerOptions().position(APPoint)
                     .title(MACAddress).icon(BitmapDescriptorFactory.fromResource(R.drawable.wifi_logo)).visible(true));
         }
@@ -537,6 +549,8 @@ public class visual_wifi_map extends AppCompatActivity
         public void setColor(int color){
             this.color = color;
         }
+
+        public boolean isVisible(){ return isVisible;}
 
         public String getSSID(){
             return ssid;
@@ -562,7 +576,7 @@ public class visual_wifi_map extends AppCompatActivity
         public void setSignal(LatLng point){
             this.signalPoints.add(mMap.addCircle(new CircleOptions()
                     .radius(3).strokeWidth(1).strokeColor(color).fillColor(color)
-                    .center(point).visible(true)));
+                    .center(point).visible(isVisible)));
         }
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Draw Signal = = = = = = = = = =
@@ -576,12 +590,19 @@ public class visual_wifi_map extends AppCompatActivity
         float curLng = (float)prevPos.longitude;
         Random random = new Random();
 
-        String[] query = { "SELECT MAC, SSID, Latitude, Longitude FROM LocalDevice where Latitude between '"+ String.format("%.6f",curLat-0.002f) +"' and '" +  String.format("%.6f",curLat+0.002f) + "'" +
-                "and Longitude between '"+ String.format("%.6f",curLng-0.002f) +"' and '" +  String.format("%.6f",curLng+0.002f) + "';",
-                "SELECT MAC, SSID, Latitude, Longitude FROM WifiDevice where Latitude between '"+ String.format("%.6f",curLat-0.002f) +"' and '" +  String.format("%.6f",curLat+0.002f) + "'" +
-                        "and Longitude between '"+ String.format("%.6f",curLng-0.002f) +"' and '" +  String.format("%.6f",curLng+0.002f) + "';" };
+        String[] query = { "SELECT MAC, SSID, Latitude, Longitude FROM LocalDevice where Latitude between '"+ String.format("%.6f",curLat-0.0005f) +"' and '" +  String.format("%.6f",curLat+0.0005f) + "'" +
+                "and Longitude between '"+ String.format("%.6f",curLng-0.0005f) +"' and '" +  String.format("%.6f",curLng+0.0005f) + "';",
+                "SELECT MAC, SSID, Latitude, Longitude FROM WifiDevice where Latitude between '"+ String.format("%.6f",curLat-0.0005f) +"' and '" +  String.format("%.6f",curLat+0.0005f) + "'" +
+                        "and Longitude between '"+ String.format("%.6f",curLng-0.0005f) +"' and '" +  String.format("%.6f",curLng+0.0005f) + "';" };
+
+//        PolygonOptions polygonOptions = new PolygonOptions().strokeWidth(5)
+//                .add( new LatLng(((double)curLat-0.001),((double)curLng-0.001)), new LatLng(((double)curLat-0.001),((double)curLng+0.001)),
+//                        new LatLng(((double)curLat+0.001),((double)curLng+0.001)), new LatLng(((double)curLat+0.001),((double)curLng-0.001)));
+//        mMap.addPolygon(polygonOptions);
+
+        int idx = 0;
         for(int i=0; i<2; i++){
-            Cursor cursor = mDatabaseRead.rawQuery(query[i],null);
+            Cursor cursor = mDatabaseRead.rawQuery(query[i], null);
             // AP마다 색깔을 랜덤으로 하기 위해서
 
             while (cursor.moveToNext()) { //  ap
@@ -589,24 +610,14 @@ public class visual_wifi_map extends AppCompatActivity
                 String ssid = cursor.getString(cursor.getColumnIndex("SSID"));
                 double lat = cursor.getFloat(cursor.getColumnIndex("Latitude"));
                 double lng = cursor.getFloat(cursor.getColumnIndex("Longitude"));
-                String[] query2 = {"SELECT Latitude, Longitude, SSID, RSSI FROM LocalData where "+ mac + ";",
-                        "SELECT Latitude, Longitude, SSID, RSSI FROM WifiData where "+ mac + ";" };
-                int idx = 0;
-                for(int j=0; j<2; j++){
-                    Cursor cursor2 = mDatabaseRead.rawQuery(query2[j],null);
-                    mSignalInfoList.add(new SignalInfo());
-                    mSignalInfoList.get(idx).setSSID(ssid);
-                    mSignalInfoList.get(idx).setMACAddress(mac);
-                    int color = Color.argb(30, random.nextInt(256), random.nextInt(256), random.nextInt(256));
-                    mSignalInfoList.get(idx).setColor(color);
-                    mSignalInfoList.get(idx).setAPPoint(new LatLng(lat, lng));
-                    while(cursor2.moveToNext()){
-                        mSignalInfoList.get(idx).setSignal(new LatLng(cursor2.getFloat(cursor2.getColumnIndex("Latitude")), cursor2.getColumnIndex("Longitude")));
-                    }
-                    cursor2.close();
-                    idx++;
-                }
-                idx = 0;
+
+                mSignalInfoList.add(new SignalInfo());
+                mSignalInfoList.get(idx).setSSID(ssid);
+                mSignalInfoList.get(idx).setMACAddress(mac);
+                int color = Color.argb(30, random.nextInt(256), random.nextInt(256), random.nextInt(256));
+                mSignalInfoList.get(idx).setColor(color);
+                mSignalInfoList.get(idx).setAPPoint(new LatLng(lat, lng));
+                idx++;
             }
             cursor.close();
         }
@@ -695,6 +706,7 @@ public class visual_wifi_map extends AppCompatActivity
                     e.printStackTrace();
                 }
             } else if(mSelectedItem == getResources().getString(R.string.wifi_manual)) {
+                mWifiManager.startScan();
                 mDrawerLayout.closeDrawer(mDrawerList); // closed
                 // - - - - - - - - - - WIFI 자동연결 서비스 종료 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 try {
@@ -991,7 +1003,7 @@ public class visual_wifi_map extends AppCompatActivity
             try
             {
                 publishProgress(new Double(progress));
-                String sqlCount = "SELECT count(DISTINCT MAC) FROM LocalData;";
+                String sqlCount = "SELECT count(DISTINCT MAC) FROM LocalDevice;";
                 Cursor count = db_r.rawQuery(sqlCount, null);
                 while(count.moveToNext()){
                     total = count.getInt(0);
@@ -1093,6 +1105,7 @@ public class visual_wifi_map extends AppCompatActivity
                             " WHERE MAC = '" + _mac + "';";
 
                     db_w.execSQL(sql3);
+                    db_w.execSQL("delete from WifiDevice where MAC = '" + _mac + "';");
                     progress++;
                     publishProgress(new Double(progress));
 

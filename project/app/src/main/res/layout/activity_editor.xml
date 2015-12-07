@@ -22,22 +22,6 @@
             android:layout_height="match_parent"
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
-            android:id="@+id/draw_map">
-
-            <ListView
-                android:layout_width="339dp"
-                android:layout_height="413dp"
-                android:id="@+id/deviceListView"
-                android:layout_gravity="center"
-                android:layout_alignBottom="@+id/draw_map"
-                android:listSelector="@drawable/list_selector"/>
-
-        </FrameLayout>
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
             android:id="@+id/menu_layout">
 
             <com.ogaclejapan.arclayout.ArcLayout
@@ -123,6 +107,7 @@
 
             </com.ogaclejapan.arclayout.ArcLayout>
         </FrameLayout>
+
         <Button
             android:id="@+id/fab"
             android:layout_width="48dp"
@@ -135,6 +120,23 @@
             android:textColor="@color/white"
             android:textSize="24sp"
             />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/draw_map">
+
+            <ListView
+                android:layout_width="339dp"
+                android:layout_height="413dp"
+                android:id="@+id/deviceListView"
+                android:layout_gravity="center"
+                android:layout_alignBottom="@+id/draw_map"
+                android:listSelector="@drawable/list_selector"/>
+
+        </FrameLayout>
     </RelativeLayout>
 
 </LinearLayout>
