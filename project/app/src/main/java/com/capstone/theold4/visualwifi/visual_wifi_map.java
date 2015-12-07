@@ -572,67 +572,44 @@ public class visual_wifi_map extends AppCompatActivity
         mMap.clear();
         mSignalInfoList = new ArrayList<>();
 
-        String query = "SELECT * FROM LocalData;";
-        Cursor cursor = mDatabaseRead.rawQuery(query,null);
-        int id_mac, id_latitude, id_longitude, id_ssid, id_rssi;
-        id_mac = cursor.getColumnIndex("MAC");
-        id_latitude = cursor.getColumnIndex("Latitude");
-        id_longitude = cursor.getColumnIndex("Longitude");
-        id_ssid = cursor.getColumnIndex("SSID");
-        id_rssi = cursor.getColumnIndex("RSSI");
-        // AP마다 색깔을 랜덤으로 하기 위해서
+        float curLat = (float)prevPos.latitude;
+        float curLng = (float)prevPos.longitude;
         Random random = new Random();
-        double lat = 0;
-        double lng = 0;
 
-        while (cursor.moveToNext()) {
-            // 비어있으면 새로 추가
-            if(mSignalInfoList.isEmpty()){
-                mSignalInfoList.add(new SignalInfo());
-                mSignalInfoList.get(0).setSSID(cursor.getString(id_ssid));
-                mSignalInfoList.get(0).setMACAddress(cursor.getString(id_mac));
-                int color = Color.argb(30,random.nextInt(256),random.nextInt(256),random.nextInt(256));
-                mSignalInfoList.get(0).setColor(color);
-                mSignalInfoList.get(0).setSignal(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
-                String query2 = "SELECT Latitude, Longitude FROM LocalDevice WHERE MAC = '" + mSignalInfoList.get(0).getMACAddress() + "';";
-                Cursor cursor2 = mDatabaseRead.rawQuery(query2,null);
-                while(cursor2.moveToNext()){
-                    lat = cursor2.getFloat(cursor2.getColumnIndex("Latitude"));
-                    lng = cursor2.getFloat(cursor2.getColumnIndex("Longitude"));
-                }
-                cursor2.close();
-                mSignalInfoList.get(0).setAPPoint(new LatLng(lat, lng));
-            }else{
-                String ssid = cursor.getString(id_ssid);
-                String mac = cursor.getString(id_mac);
-                boolean allCheck = false;
-                for(SignalInfo signal : mSignalInfoList){
-                    // MAC이 같다면 신호강도만 추가 그리기
-                    if(signal.getMACAddress().equals(mac)) {
-                        allCheck = true;
-                        signal.setSignal(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
-                        break;
-                    }
-                }
-                // 같지 않으면 새로 추가
-                if(!allCheck){
+        String[] query = { "SELECT MAC, SSID, Latitude, Longitude FROM LocalDevice where Latitude between '"+ String.format("%.6f",curLat-0.002f) +"' and '" +  String.format("%.6f",curLat+0.002f) + "'" +
+                "and Longitude between '"+ String.format("%.6f",curLng-0.002f) +"' and '" +  String.format("%.6f",curLng+0.002f) + "';",
+                "SELECT MAC, SSID, Latitude, Longitude FROM WifiDevice where Latitude between '"+ String.format("%.6f",curLat-0.002f) +"' and '" +  String.format("%.6f",curLat+0.002f) + "'" +
+                        "and Longitude between '"+ String.format("%.6f",curLng-0.002f) +"' and '" +  String.format("%.6f",curLng+0.002f) + "';" };
+        for(int i=0; i<2; i++){
+            Cursor cursor = mDatabaseRead.rawQuery(query[i],null);
+            // AP마다 색깔을 랜덤으로 하기 위해서
+
+            while (cursor.moveToNext()) { //  ap
+                String mac = cursor.getString(cursor.getColumnIndex("MAC"));
+                String ssid = cursor.getString(cursor.getColumnIndex("SSID"));
+                double lat = cursor.getFloat(cursor.getColumnIndex("Latitude"));
+                double lng = cursor.getFloat(cursor.getColumnIndex("Longitude"));
+                String[] query2 = {"SELECT Latitude, Longitude, SSID, RSSI FROM LocalData where "+ mac + ";",
+                        "SELECT Latitude, Longitude, SSID, RSSI FROM WifiData where "+ mac + ";" };
+                int idx = 0;
+                for(int j=0; j<2; j++){
+                    Cursor cursor2 = mDatabaseRead.rawQuery(query2[j],null);
                     mSignalInfoList.add(new SignalInfo());
-                    mSignalInfoList.get(mSignalInfoList.size() - 1).setSSID(cursor.getString(id_ssid));
-                    mSignalInfoList.get(mSignalInfoList.size() - 1).setMACAddress(cursor.getString(id_mac));
-                    int color = Color.argb(30,random.nextInt(256),random.nextInt(256),random.nextInt(256));
-                    mSignalInfoList.get(mSignalInfoList.size() - 1).setColor(color);
-                    mSignalInfoList.get(mSignalInfoList.size() - 1).setSignal(new LatLng(cursor.getDouble(id_latitude), cursor.getDouble(id_longitude)));
-                    String query2 = "SELECT Latitude, Longitude FROM LocalDevice WHERE MAC = '" + mSignalInfoList.get(mSignalInfoList.size() - 1).getMACAddress() + "';";
-                    Cursor cursor2 = mDatabaseRead.rawQuery(query2,null);
+                    mSignalInfoList.get(idx).setSSID(ssid);
+                    mSignalInfoList.get(idx).setMACAddress(mac);
+                    int color = Color.argb(30, random.nextInt(256), random.nextInt(256), random.nextInt(256));
+                    mSignalInfoList.get(idx).setColor(color);
+                    mSignalInfoList.get(idx).setAPPoint(new LatLng(lat, lng));
                     while(cursor2.moveToNext()){
-                        lat = cursor2.getFloat(cursor2.getColumnIndex("Latitude"));
-                        lng = cursor2.getFloat(cursor2.getColumnIndex("Longitude"));
+                        mSignalInfoList.get(idx).setSignal(new LatLng(cursor2.getFloat(cursor2.getColumnIndex("Latitude")), cursor2.getColumnIndex("Longitude")));
                     }
-                    mSignalInfoList.get(mSignalInfoList.size() - 1).setAPPoint(new LatLng(lat, lng));
+                    cursor2.close();
+                    idx++;
                 }
+                idx = 0;
             }
+            cursor.close();
         }
-        cursor.close();
     }
     // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = Draw Signal = = = = = = = = = =
 
@@ -897,7 +874,9 @@ public class visual_wifi_map extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        task.cancel(true);
+        if(task != null){
+            task.cancel(true);
+        }
         Log.i("[PAUSE]", "------------------------------------");
         SharedPreferences pref = getSharedPreferences("SAVE_STATE", 0);
         SharedPreferences.Editor edit = pref.edit();
@@ -1019,30 +998,94 @@ public class visual_wifi_map extends AppCompatActivity
                 }
                 count.close();
 
-                String sql1 = "SELECT MAC, Latitude, Longitude FROM LocalData;";
+                String sql1 = "SELECT MAC, Latitude, Longitude FROM LocalDevice;";
                 Cursor c = db_r.rawQuery(sql1, null);
                 while (c.moveToNext()) {
                     String _mac = c.getString(c.getColumnIndex("MAC"));
                     CCx = c.getFloat(c.getColumnIndex("Longitude"));
                     CCy = c.getFloat(c.getColumnIndex("Latitude"));
-                    int maxRSSI = -9999;
 
-                    String[] sql2 = {"SELECT Latitude, Longitude, RSSI FROM LocalData WHERE MAC = '" + _mac + "';",
-                            "SELECT Latitude, Longitude, RSSI FROM WifiData WHERE MAC = '" + _mac + "';"};
+                    String[] sql2 = {"SELECT Latitude, Longitude FROM LocalData WHERE MAC = '" + _mac + "';",
+                            "SELECT Latitude, Longitude FROM WifiData WHERE MAC = '" + _mac + "';"};
                     for (int sq = 0; sq < 2; sq++) {
                         Cursor c2 = db_r.rawQuery(sql2[sq], null);
                         while (c2.moveToNext()) {
                             tempY = c2.getFloat(c2.getColumnIndex("Latitude"));
                             tempX = c2.getFloat(c2.getColumnIndex("Longitude"));
-                            tempRSSI = c2.getInt(c2.getColumnIndex("RSSI"));
-                            if(maxRSSI < tempRSSI) {
-                                CCx = tempX;
-                                CCy = tempY;
-                                maxRSSI = tempRSSI;
-                            }
+
+                            // 중심으로의 상대적 위치 및 거리
+                            tempY -= CCy;
+                            tempX -= CCx;
+                            tempD = tempX * tempX + tempY * tempY;
+
+                            // 8방향  8점 잡기
+                            if (tempX == 0 && tempY == 0) { // 센터이면
+                                continue;
+                            } else {
+                                angle = Math.atan2(tempY, tempX);
+                                if (angle >= dir_WWN) { // 서 (절반)
+                                    if (tempD > WWd) {
+                                        WWd = tempD;
+                                        WWx = tempX;
+                                        WWy = tempY;
+                                    }
+                                } else if (angle >= dir_NNW) { // 북서
+                                    if (tempD > WNd) {
+                                        WNd = tempD;
+                                        WNx = tempX;
+                                        WNy = tempY;
+                                    }
+                                } else if (angle >= dir_NNE) {  // 북
+                                    if (tempD > NNd) {
+                                        NNd = tempD;
+                                        NNx = tempX;
+                                        NNy = tempY;
+                                    }
+                                } else if (angle >= dir_EEN) {  // 북동
+                                    if (tempD > ENd) {
+                                        ENd = tempD;
+                                        ENx = tempX;
+                                        ENy = tempY;
+                                    }
+                                } else if (angle >= dir_EES) {  // 동
+                                    if (tempD > EEd) {
+                                        EEd = tempD;
+                                        EEx = tempX;
+                                        EEy = tempY;
+                                    }
+                                } else if (angle >= dir_SSE) {  // 남동
+                                    if (tempD > ESd) {
+                                        ESd = tempD;
+                                        ESx = tempX;
+                                        ESy = tempY;
+                                    }
+                                } else if (angle >= dir_SSW) {  // 남
+                                    if (tempD > SSd) {
+                                        SSd = tempD;
+                                        SSx = tempX;
+                                        SSy = tempY;
+                                    }
+                                } else if (angle >= dir_WWS) {  // 남서
+                                    if (tempD > WSd) {
+                                        WSd = tempD;
+                                        WSx = tempX;
+                                        WSy = tempY;
+                                    }
+                                } else {   //  서 (나머지 절반)
+                                    if (tempD > WWd) {
+                                        WWd = tempD;
+                                        WWx = tempX;
+                                        WWy = tempY;
+                                    }
+                                }
+                            }  // if else 문, 8점 비교 대입
                         } // while문 Local, Wifi 테이블 8점 잡기
                         c2.close();
                     }  // for문 end 8점 잡기 완료 ( DB 모두 검색 완료 )
+
+                    // 중점 잡기 ( AP 위치 잡기 )
+                    CCx = CCx + (NNx + SSx + EEx + WWx + WNx + WSx + ENx + ESx) / 8;
+                    CCy = CCy + (NNy + SSy + EEy + WWy + WNy + WSy + ENy + ESy) / 8;
 
                     // localDevice 테이블 업데이트하기
                     String sql3 = "UPDATE LocalDevice " +
